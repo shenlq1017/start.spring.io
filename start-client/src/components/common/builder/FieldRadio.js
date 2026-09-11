@@ -8,7 +8,7 @@ function FieldRadio({ id, text, value, onChange, disabled, options }) {
     <div className='control control-inline'>
       <label htmlFor={id}>{text}</label>
       <Radio
-        name='packaging'
+        name={id}
         disabled={disabled}
         selected={value}
         options={options}

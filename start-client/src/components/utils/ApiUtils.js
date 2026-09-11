@@ -63,6 +63,7 @@ export const getShareUrl = values => {
       set(props, key, value)
     }
   })
+  set(props, 'packaging', 'jar')
   let params = `${querystring.stringify(props)}`
   const deps = applyArchitectureDependencies(values)
   if (deps.length > 0) {
@@ -336,7 +337,7 @@ export const getProject = function getProject(url, values, config) {
       description:
         get(values, 'meta.description') || 'Demo project for Spring Boot',
       packageName: get(values, 'meta.packageName'),
-      packaging: get(values, 'meta.packaging'),
+      packaging: 'jar',
       javaVersion: get(values, 'meta.java'),
       configurationFileFormat: get(values, 'meta.configurationFileFormat'),
     })

@@ -25,7 +25,7 @@ export const defaultInitializrContext = {
       artifact: '',
       name: '',
       description: '',
-      packaging: '',
+      packaging: 'jar',
       packageName: '',
       java: '',
       configurationFileFormat: '',
@@ -81,9 +81,7 @@ const getPersistedOrDefault = json => {
         get(json, 'defaultValues.meta').description ||
         'Demo project for Spring Boot',
       packageName: get(json, 'defaultValues.meta').packageName,
-      packaging:
-        localStorage.getItem('packaging') ||
-        get(json, 'defaultValues.meta').packaging,
+      packaging: 'jar',
       java:
         localStorage.getItem('java') || get(json, 'defaultValues.meta').java,
       configurationFileFormat:
@@ -126,7 +124,7 @@ const persist = changes => {
     localStorage.setItem('architecture', get(changes, 'architecture'))
   }
   if (get(changes, 'meta.packaging')) {
-    localStorage.setItem('packaging', get(changes, 'meta.packaging'))
+    localStorage.setItem('packaging', 'jar')
   }
   if (get(changes, 'meta.java')) {
     localStorage.setItem('java', get(changes, 'meta.java'))
@@ -141,6 +139,7 @@ export function reducer(state, action) {
     case 'COMPLETE': {
       const json = get(action, 'payload')
       const values = getPersistedOrDefault(json)
+      values.meta.packaging = 'jar'
       return {
         values,
         share: getShareUrl(values),
@@ -155,6 +154,7 @@ export function reducer(state, action) {
       if (get(changes, 'meta')) {
         meta = { ...meta, ...get(changes, 'meta') }
       }
+      meta.packaging = 'jar'
       if (get(changes, 'boot')) {
         const { boot, ...err } = errors
         errors = err
@@ -205,6 +205,10 @@ export function reducer(state, action) {
         lists
       )
       const values = sanitizeArchitecture(parsed)
+      if (!values.meta) {
+        values.meta = {}
+      }
+      values.meta.packaging = 'jar'
       if (!values.entities || !values.entities.length) {
         values.entities = defaultEntities()
       }

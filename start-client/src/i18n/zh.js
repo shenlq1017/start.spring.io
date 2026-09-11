@@ -55,6 +55,8 @@ const zh = {
   'entities.apis': '接口',
   'entities.collapse': '收起',
   'entities.expand': '展开',
+  'entities.edit': '编辑',
+  'entities.done': '完成',
   'boot.unsupported': 'Spring Boot {value} 不受支持，请选择有效版本。',
   'deps.search.placeholder': 'Web、Security、JPA、Actuator、Devtools…',
   'deps.multi.help': '按住 {symb} 可多选添加',

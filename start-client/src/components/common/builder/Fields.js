@@ -101,7 +101,7 @@ function Fields({
         <div className='left'>
           <Warnings />
           <div className='col-sticky'>
-            <div className='colset'>
+            <div className='colset colset-project-lang'>
               <div className='left'>
                 <Control text={t('Project')}>
                   <Radio
@@ -128,7 +128,7 @@ function Fields({
               </div>
             </div>
 
-            <Control text={t('Spring Boot')}>
+            <Control text={t('Spring Boot')} className='control-boot'>
               <Radio
                 name='boot'
                 selected={get(values, 'boot')}
@@ -162,20 +162,29 @@ function Fields({
               />
             </Control>
 
-            {showTemplate && (
-              <Control text={t('Template')} className='control-template'>
-                <Radio
-                  name='template'
-                  selected={
-                    normalizeTemplate(architecture, template, entities)
-                  }
-                  options={templateOptionsFor(architecture)}
-                  onChange={onTemplateChange}
-                />
-              </Control>
-            )}
+            <div
+              className={`fields-slot fields-slot-template${
+                showTemplate ? '' : ' is-reserved'
+              }`}
+              aria-hidden={!showTemplate}
+            >
+              {showTemplate ? (
+                <Control text={t('Template')} className='control-template'>
+                  <Radio
+                    name='template'
+                    selected={
+                      normalizeTemplate(architecture, template, entities)
+                    }
+                    options={templateOptionsFor(architecture)}
+                    onChange={onTemplateChange}
+                  />
+                </Control>
+              ) : (
+                <div className='fields-slot-spacer' />
+              )}
+            </div>
 
-            <Control text={t('Project Metadata')}>
+            <Control text={t('Project Metadata')} className='control-metadata'>
               <FieldInput
                 id='input-group'
                 value={get(values, 'meta.group')}
@@ -216,43 +225,49 @@ function Fields({
                   update({ meta: { packageName: event.target.value } })
                 }}
               />
-              <FieldRadio
-                id='input-packaging'
-                value={get(values, 'meta.packaging')}
-                text={t('Packaging')}
-                options={get(config, 'lists.meta.packaging')}
-                onChange={value => {
-                  update({ meta: { packaging: value } })
-                }}
-              />
-              <FieldRadio
-                id='input-configurationFileFormat'
-                value={get(values, 'meta.configurationFileFormat')}
-                text={t('Configuration')}
-                options={get(config, 'lists.meta.configurationFileFormat')}
-                onChange={value => {
-                  update({ meta: { configurationFileFormat: value } })
-                }}
-              />
-              <FieldRadio
-                id='input-java'
-                value={get(values, 'meta.java')}
-                text={t('Java')}
-                options={get(config, 'lists.meta.java')}
-                onChange={value => {
-                  update({ meta: { java: value } })
-                }}
-              />
+              <div className='colset colset-meta-row'>
+                <div className='left'>
+                  <FieldRadio
+                    id='input-configurationFileFormat'
+                    value={get(values, 'meta.configurationFileFormat')}
+                    text={t('Configuration')}
+                    options={get(config, 'lists.meta.configurationFileFormat')}
+                    onChange={value => {
+                      update({ meta: { configurationFileFormat: value } })
+                    }}
+                  />
+                </div>
+                <div className='right'>
+                  <FieldRadio
+                    id='input-java'
+                    value={get(values, 'meta.java')}
+                    text={t('Java')}
+                    options={get(config, 'lists.meta.java')}
+                    onChange={value => {
+                      update({ meta: { java: value } })
+                    }}
+                  />
+                </div>
+              </div>
             </Control>
 
-            {showEntities && (
-              <Control text={t('Entities')} className='control-entities'>
-                <EntitiesPanel
-                  entities={entities}
-                  onChange={next => update({ entities: next })}
-                />
-              </Control>
-            )}
+            <div
+              className={`fields-slot fields-slot-entities${
+                showEntities ? '' : ' is-reserved'
+              }`}
+              aria-hidden={!showEntities}
+            >
+              {showEntities ? (
+                <Control text={t('Entities')} className='control-entities'>
+                  <EntitiesPanel
+                    entities={entities}
+                    onChange={next => update({ entities: next })}
+                  />
+                </Control>
+              ) : (
+                <div className='fields-slot-spacer fields-slot-spacer-entities' />
+              )}
+            </div>
           </div>
         </div>
         <div className='right'>

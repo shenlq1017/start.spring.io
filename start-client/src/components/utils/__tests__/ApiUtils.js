@@ -332,7 +332,7 @@ describe('getShareUrl', () => {
       dependencies: ['foo12', 'foo13'],
     })
     expect(result).toBe(
-      'type=foo1&language=foo2&platformVersion=foo3&packaging=foo4&configurationFileFormat=foo11&jvmVersion=foo5&groupId=foo6&artifactId=foo7&name=&description=&packageName=foo10&dependencies=foo12,foo13'
+      'type=foo1&language=foo2&platformVersion=foo3&packaging=jar&configurationFileFormat=foo11&jvmVersion=foo5&groupId=foo6&artifactId=foo7&name=&description=&packageName=foo10&dependencies=foo12,foo13'
     )
   })
 })
@@ -366,7 +366,7 @@ describe('getProject', () => {
     ])
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(
-      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=foo4&javaVersion=foo5&configurationFileFormat=foo11&dependencies=foo12,foo13'
+      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=jar&javaVersion=foo5&configurationFileFormat=foo11&dependencies=foo12,foo13'
     )
   })
 
@@ -388,7 +388,7 @@ describe('getProject', () => {
     getProject('http://demo/starter.zip', values, [{ id: 'foo12' }])
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(
-      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=foo4&javaVersion=foo5&configurationFileFormat=foo11&dependencies=foo12'
+      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=jar&javaVersion=foo5&configurationFileFormat=foo11&dependencies=foo12'
     )
   })
 
@@ -409,7 +409,7 @@ describe('getProject', () => {
     getProject('http://demo/starter.zip', values, [])
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(
-      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=foo4&javaVersion=foo5&configurationFileFormat=foo11'
+      'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=jar&javaVersion=foo5&configurationFileFormat=foo11'
     )
   })
 })

@@ -131,7 +131,7 @@ describe('UPDATE action', () => {
     expect(get(result, 'values.meta.packageName')).toBe('com.example3.')
   })
 
-  it('should reduce the state (meta packaging)', () => {
+  it('should reduce the state (meta packaging forced to jar)', () => {
     const result = reducer(state, {
       type: 'UPDATE',
       payload: {
@@ -140,7 +140,7 @@ describe('UPDATE action', () => {
         },
       },
     })
-    expect(get(result, 'values.meta.packaging')).toBe('war')
+    expect(get(result, 'values.meta.packaging')).toBe('jar')
   })
   it('should reduce the state (configuration file format)', () => {
     const result = reducer(state, {
@@ -203,7 +203,7 @@ describe('LOAD action', () => {
     expect(get(result, 'values.boot')).toBe('2.2.0.RELEASE')
     expect(get(result, 'values.meta.group')).toBe('com.example1')
     expect(get(result, 'values.meta.artifact')).toBe('demo1')
-    expect(get(result, 'values.meta.packaging')).toBe('war')
+    expect(get(result, 'values.meta.packaging')).toBe('jar')
     expect(get(result, 'values.meta.packageName')).toBe('com.example1.demo1')
     expect(get(result, 'values.meta.java')).toBe('1.8')
     expect(get(result, 'values.meta.configurationFileFormat')).toBe('yaml')

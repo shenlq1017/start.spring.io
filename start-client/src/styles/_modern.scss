@@ -49,45 +49,112 @@ body {
   }
 }
 
-// Card-like builder panels — give Fields more width, Dependencies narrower
+// P4 — wider Fields column; move center divider with the flex split
+// (base .colset-main uses background center/1px — override position)
 .colset-main {
+  // divider at left-column boundary (not geometric center)
+  background: linear-gradient($light-border, $light-border) no-repeat 68%/1px
+    100% !important;
   > .left {
-    flex: 0 0 60%;
-    max-width: 60%;
+    flex: 0 0 68%;
+    max-width: 68%;
     box-sizing: border-box;
+    padding-right: 2rem !important;
   }
   > .right {
-    flex: 0 0 40%;
-    max-width: 40%;
+    flex: 0 0 32%;
+    max-width: 32%;
     box-sizing: border-box;
-  }
-  .left,
-  .right {
-    > .control,
-    > .dependency-header,
-    > .dependencies-list,
-    > form,
-    > .form {
-      // keep structure; pad sections visually via children
-    }
+    padding-left: 1.5rem;
   }
 }
 
 @media (min-width: 1280px) {
   .colset-main {
+    background-position: 66% !important;
     > .left {
-      flex: 0 0 58%;
-      max-width: 58%;
+      flex: 0 0 66%;
+      max-width: 66%;
     }
     > .right {
-      flex: 0 0 42%;
-      max-width: 42%;
+      flex: 0 0 34%;
+      max-width: 34%;
     }
   }
 }
 
-@media (max-width: 900px) {
+@media (min-width: 1600px) {
   .colset-main {
+    background-position: 65% !important;
+    > .left {
+      flex: 0 0 65%;
+      max-width: 65%;
+      padding-right: 2.5rem !important;
+    }
+    > .right {
+      flex: 0 0 35%;
+      max-width: 35%;
+    }
+    // Project / Boot / Architecture / Template radios stay on one line
+    > .left {
+      .control-boot .group-radio,
+      .control-architecture .group-radio,
+      .control-template .group-radio,
+      .colset-project-lang .group-radio {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+      }
+      .radio {
+        margin-right: 0.85rem;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+    }
+  }
+}
+
+@media (max-width: 1000px) {
+  .colset-main {
+    background: none !important;
+    > .left,
+    > .right {
+      flex: none;
+      max-width: 100%;
+      padding-right: 0 !important;
+      padding-left: 0;
+    }
+  }
+}
+
+// Inner Project | Language row — tighter gutter
+.colset-project-lang {
+  .left {
+    padding-right: 1.25rem !important;
+  }
+}
+
+// Config | Java on one row inside metadata
+.colset-meta-row {
+  display: flex;
+  gap: 0.5rem;
+  > .left,
+  > .right {
+    flex: 1 1 50%;
+    max-width: 50%;
+    padding-right: 0.5rem !important;
+  }
+  .control-inline {
+    label {
+      flex: 72px 0;
+      min-width: 64px;
+    }
+  }
+}
+
+@media (max-width: 1000px) {
+  .colset-meta-row {
+    display: block;
     > .left,
     > .right {
       flex: none;
@@ -110,11 +177,48 @@ body {
   label {
     color: $light-muted-foreground;
     font-weight: 500;
-    min-width: 110px;
+    min-width: 72px;
     padding-right: $space-xs;
   }
   input {
     border-radius: 0;
+  }
+}
+
+// P4 — Project Metadata density closer to Project/Language controls
+.control-metadata {
+  > .label {
+    font-size: $spring-font-size + 1;
+  }
+  .control-inline {
+    padding: 0.35rem 0;
+    label {
+      flex: 72px 0;
+      min-width: 72px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    input,
+    .group-radio {
+      margin-left: 0.75rem;
+      font-size: 13px;
+    }
+    input {
+      padding: 0.25rem 0 0.4rem;
+      font-size: 13px;
+    }
+    .radio {
+      margin-right: 0.9rem;
+      font-size: 13px;
+      .radio-content {
+        padding: 4px 6px 4px 28px;
+        font-size: 13px;
+      }
+      .caret {
+        top: 5px;
+        left: 5px;
+      }
+    }
   }
 }
 
@@ -597,7 +701,32 @@ body.dark {
   }
 }
 
-// Multi-entity panel — original Control style (no new card skin)
+// Architecture/Template/Entities reserved slots — avoid layout thrash
+.fields-slot {
+  position: relative;
+  &.fields-slot-template {
+    min-height: 3.25rem;
+  }
+  &.fields-slot-entities {
+    min-height: 5.5rem;
+  }
+  &.is-reserved {
+    .fields-slot-spacer {
+      visibility: hidden;
+      pointer-events: none;
+      min-height: inherit;
+    }
+    .fields-slot-spacer-entities {
+      min-height: 5.5rem;
+    }
+  }
+}
+
+.fields-slot-spacer {
+  min-height: 3.25rem;
+}
+
+// Multi-entity — home list only (Initializr density, light质感)
 .control-entities {
   .control-element {
     width: 100%;
@@ -608,26 +737,42 @@ body.dark {
   width: 100%;
 }
 
-.entity-details {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.4);
+.entities-panel-list {
+  .entity-summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-.entity-summary {
-  cursor: pointer;
-  list-style: none;
+.entity-chip-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid $light-border;
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.entity-chip {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
-  user-select: none;
-  &::-webkit-details-marker {
-    display: none;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  &:hover .entity-chip-name {
+    color: $light-primary;
   }
 }
 
@@ -637,83 +782,17 @@ body.dark {
   margin-left: 4px;
 }
 
-.entity-body {
-  padding: 0 10px 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.entity-meta-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.entity-list-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
-  label {
-    display: flex;
-    flex-direction: column;
-    font-size: 12px;
-    gap: 4px;
-  }
-  .entity-meta-wide {
-    grid-column: 1 / -1;
-  }
-}
-
-.entity-input,
-.entity-select {
-  font: inherit;
-  font-size: 13px;
-  padding: 4px 6px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 3px;
-  background: #fff;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.entity-field-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  .entity-input {
-    flex: 1 1 90px;
-    min-width: 70px;
-  }
-  .entity-select {
-    flex: 0 0 110px;
-    width: auto;
-  }
-}
-
-.entity-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  input {
-    margin: 0;
-  }
-}
-
-.entity-section-label {
-  margin: 10px 0 6px;
-  font-size: 12px;
-  font-weight: 600;
-  opacity: 0.85;
-}
-
-.entity-apis {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  margin-top: 6px;
 }
 
 .entity-link-btn {
   background: none;
   border: none;
-  color: #0066cc;
+  color: $light-primary;
   cursor: pointer;
   font: inherit;
   font-size: 12px;
@@ -730,78 +809,199 @@ body.dark {
 
 .entity-add-btn {
   display: inline-block;
-  margin-top: 4px;
+  margin-top: 2px;
   padding: 6px 10px;
   font: inherit;
   font-size: 13px;
-  border: 1px dashed rgba(0, 0, 0, 0.25);
-  border-radius: 4px;
+  border: 1px dashed $light-border;
+  border-radius: $spring-radius;
   background: transparent;
   cursor: pointer;
+  color: inherit;
   &:hover {
-    border-color: rgba(0, 0, 0, 0.45);
+    border-color: $light-primary;
+    color: $light-primary;
+  }
+}
+
+.entity-open-editor-btn {
+  border-style: solid;
+}
+
+// Entities editor — Explore shell + home visual language
+.entities-editor {
+  .entities-editor-layout {
+    .left {
+      flex: 0 0 260px;
+    }
+  }
+  .entities-editor-tabs {
+    padding: 12px;
+  }
+  .entity-tab-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    li {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+  }
+  .entity-tab {
+    flex: 1;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $spring-radius;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: inherit;
+    cursor: pointer;
+    &:hover {
+      background: $light-muted;
+    }
+    &.active {
+      border-color: $light-primary;
+      color: $light-primary;
+      font-weight: 600;
+      background: rgba($light-primary, 0.06);
+    }
+  }
+  .entity-editor-form {
+    padding: 16px 20px 24px;
+  }
+  .entity-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    .control-inline {
+      padding: 0.3rem 0;
+      label {
+        flex: 72px 0;
+        min-width: 64px;
+        font-size: 13px;
+      }
+      input,
+      .entity-select {
+        margin-left: 0.75rem;
+        flex: 1;
+        font-size: 13px;
+      }
+    }
+    .entity-meta-wide {
+      grid-column: 1 / -1;
+    }
+  }
+  .entity-input,
+  .entity-select {
+    font: inherit;
+    font-size: 13px;
+    padding: 4px 6px;
+    border: 0;
+    border-bottom: 2px solid $light-border;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    &:focus {
+      outline: none;
+      border-bottom-color: $light-primary;
+    }
+  }
+  .entity-field-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding: 4px 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+    .entity-input,
+    .input {
+      flex: 1 1 90px;
+      min-width: 70px;
+      border-bottom-width: 2px;
+    }
+    .entity-select {
+      flex: 0 0 110px;
+      width: auto;
+    }
+  }
+  .entity-field-desc {
+    flex: 1 1 120px !important;
+    min-width: 100px;
+  }
+  .entity-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    input {
+      margin: 0;
+    }
+  }
+  .entity-swagger-toggle {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 6px !important;
+    margin-top: 2px;
+    font-size: 12px;
+  }
+  .entity-section-label {
+    margin: 14px 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  .entity-apis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
   }
 }
 
 body.dark {
-  .entity-details {
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.03);
+  .entity-chip-row {
+    border-bottom-color: $dark-border;
   }
-  .entity-body {
-    border-top-color: rgba(255, 255, 255, 0.08);
-  }
-  .entity-input,
-  .entity-select {
-    background: rgba(0, 0, 0, 0.25);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: inherit;
+  .entity-chip:hover .entity-chip-name {
+    color: $dark-primary;
   }
   .entity-link-btn {
-    color: #7eb6ff;
+    color: $dark-primary;
   }
   .entity-add-btn {
-    border-color: rgba(255, 255, 255, 0.28);
+    border-color: $dark-border;
+    &:hover {
+      border-color: $dark-primary;
+      color: $dark-primary;
+    }
   }
-}
-
-
-// P3 EntitiesPanel polish
-.entity-summary-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-.entity-summary-caret {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid currentColor;
-  opacity: 0.55;
-  margin-right: 4px;
-  transition: transform 0.15s ease;
-}
-details.entity-details:not([open]) .entity-summary-caret {
-  transform: rotate(-90deg);
-}
-.entity-field-desc {
-  flex: 1 1 120px !important;
-  min-width: 100px;
-}
-.entity-swagger-toggle {
-  flex-direction: row !important;
-  align-items: center;
-  gap: 6px !important;
-  margin-top: 2px;
-  font-size: 12px;
-}
-.entity-field-row {
-  padding: 4px 0;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
-  &:last-of-type {
-    border-bottom: 0;
+  .entities-editor {
+    .entity-tab:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .entity-tab.active {
+      border-color: $dark-primary;
+      color: $dark-primary;
+      background: rgba($dark-primary, 0.12);
+    }
+    .entity-input,
+    .entity-select {
+      border-bottom-color: $dark-border;
+      color: $dark-color;
+      &:focus {
+        border-bottom-color: $dark-primary;
+      }
+    }
+    .entity-field-row {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
   }
 }
