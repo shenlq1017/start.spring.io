@@ -4,6 +4,7 @@ import get from 'lodash/get'
 import React, {
   Suspense,
   lazy,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -26,6 +27,8 @@ const Share = lazy(() => import('./common/share/Share'))
 const History = lazy(() => import('./common/history/History'))
 const HotKeys = lazy(() => import('./common/builder/HotKeys'))
 const Favorite = lazy(() => import('./common/favorite/Favorite'))
+
+const EXPLORE_DEBOUNCE_MS = 450
 
 export default function Application() {
   const {
@@ -53,6 +56,7 @@ export default function Application() {
   const buttonExplore = useRef(null)
   const buttonDependency = useRef(null)
   const buttonSubmit = useRef(null)
+  const exploreRequestId = useRef(0)
 
   const windowsUtils = useWindowsUtils()
   useHash()
@@ -84,6 +88,25 @@ export default function Application() {
     })
   }
 
+  const fetchProjectBlob = useCallback(async () => {
+    const url = `${windowsUtils.origin}/starter.zip`
+    const requestId = ++exploreRequestId.current
+    try {
+      const project = await getProject(url, values, get(dependencies, 'list'))
+      if (requestId === exploreRequestId.current) {
+        setBlob(project)
+      }
+      return project
+    } catch (err) {
+      if (requestId === exploreRequestId.current) {
+        toast.error(
+          err || `Could not connect to server. Please check your network.`
+        )
+      }
+      throw err
+    }
+  }, [windowsUtils.origin, values, dependencies])
+
   const onSubmit = async () => {
     if (generating || list) {
       return
@@ -107,20 +130,37 @@ export default function Application() {
   }
 
   const onExplore = async () => {
-    const url = `${windowsUtils.origin}/starter.zip`
     dispatch({ type: 'UPDATE', payload: { explore: true, list: false } })
-    const project = await getProject(
-      url,
-      values,
-      get(dependencies, 'list')
-    ).catch(err => {
-      toast.error(
-        err || `Could not connect to server. Please check your network.`
-      )
+    setBlob(null)
+    try {
+      await fetchProjectBlob()
+    } catch (e) {
       onEscape()
-    })
-    setBlob(project)
+    }
   }
+
+  // Debounced Explore refresh when architecture changes while the panel is open
+  const prevArchitecture = useRef(get(values, 'architecture'))
+  const architecture = get(values, 'architecture')
+  useEffect(() => {
+    if (!exploreOpen || !complete) {
+      prevArchitecture.current = architecture
+      return undefined
+    }
+    if (prevArchitecture.current === architecture) {
+      return undefined
+    }
+    prevArchitecture.current = architecture
+    setBlob(null)
+    const timer = setTimeout(() => {
+      fetchProjectBlob().catch(() => {
+        /* toast already shown */
+      })
+    }, EXPLORE_DEBOUNCE_MS)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [exploreOpen, complete, architecture, fetchProjectBlob])
 
   const onShare = () => {
     dispatch({ type: 'UPDATE', payload: { share: true } })

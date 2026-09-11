@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>初始向导 · 原风格质感微调稿</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --line:#334155; --text:#e2e8f0; --muted:#94a3b8;
+    --accent:#6db33f; --accent2:#22c55e; --chip:#1e293b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Metropolis,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  #frame{max-width:1100px;margin:0 auto;padding:18px 22px 40px}
+  header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 14px;border-bottom:1px solid var(--line)}
+  .logo{font-weight:700;letter-spacing:.02em}.logo em{color:var(--accent2);font-style:normal}
+  .tag{font-size:12px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+  .box{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+  .ctl{margin-bottom:14px}
+  .ctl > .lab{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .radios{display:flex;flex-wrap:wrap;gap:8px}
+  .radio{border:1px solid var(--line);border-radius:4px;padding:8px 12px;cursor:pointer;background:#0b1220;transition:border-color .15s,box-shadow .15s}
+  .radio:hover{border-color:#64748b}
+  .radio.on{border-color:var(--accent2);box-shadow:inset 0 0 0 1px var(--accent2),0 0 0 1px rgba(34,197,94,.25)}
+  label.f{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input,select{width:100%;background:#0b1220;border:1px solid var(--line);border-radius:4px;color:var(--text);padding:8px 10px}
+  .deps{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .dep{font-size:12px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .dep b{color:var(--accent2);margin-left:6px;cursor:pointer}
+  .actions{display:flex;gap:10px;margin-top:16px}
+  button{cursor:pointer;border-radius:4px;border:1px solid var(--line);padding:10px 14px;font-weight:600;background:#0b1220;color:var(--text)}
+  button.primary{background:linear-gradient(180deg,#2dd465,#16a34a);border-color:#15803d;color:#052e16;box-shadow:0 6px 16px rgba(34,197,94,.25)}
+  .side .ent{border:1px solid var(--line);border-radius:4px;margin-bottom:10px;overflow:hidden;background:#0b1220}
+  .ent summary{cursor:pointer;list-style:none;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid transparent}
+  .ent[open] summary{border-bottom-color:var(--line)}
+  .ent .body{padding:10px 12px 12px}
+  .checks{display:flex;flex-wrap:wrap;gap:8px 12px;font-size:12px;margin-top:8px}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px}
+  .add{width:100%;margin-top:6px;border-style:dashed}
+</style>
+</head>
+<body>
+<div id="frame">
+  <header>
+    <div class="logo">Spring <em>初始向导</em></div>
+    <div class="tag">原布局 · 质感微调稿（非大改版）</div>
+  </header>
+  <div class="grid">
+    <section class="box">
+      <div class="row">
+        <div class="ctl">
+          <div class="lab">项目</div>
+          <div class="radios">
+            <div class="radio on">Maven</div>
+            <div class="radio">Gradle</div>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="lab">语言</div>
+          <div class="radios">
+            <div class="radio on">Java</div>
+            <div class="radio">Kotlin</div>
+          </div>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="lab">工程架构</div>
+        <div class="radios">
+          <div class="radio">单应用</div>
+          <div class="radio on">业务微服务</div>
+          <div class="radio">平台工程</div>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="lab">模板套件</div>
+        <select><option>企业 DDD 标准</option><option>企业 DDD 增强（含 CRUD）</option></select>
+      </div>
+      <div class="ctl">
+        <div class="lab">Spring Boot</div>
+        <div class="radios"><div class="radio on">4.0.0</div></div>
+      </div>
+      <div class="row">
+        <div><label class="f">Group</label><input value="com.example"/></div>
+        <div><label class="f">Artifact</label><input value="demo-service"/></div>
+      </div>
+      <div class="row">
+        <div><label class="f">包名</label><input value="com.example.demoservice"/></div>
+        <div><label class="f">打包</label><div class="radios"><div class="radio on">Jar</div><div class="radio">War</div></div></div>
+      </div>
+      <div class="ctl">
+        <div class="lab">依赖</div>
+        <div class="deps">
+          <span class="dep">Web <b>×</b></span>
+          <span class="dep">MyBatis-Plus <b>×</b></span>
+          <span class="dep">PostgreSQL <b>×</b></span>
+          <span class="dep" style="border-style:dashed;color:var(--muted)">+ 添加依赖</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button>探索</button>
+        <button class="primary">生成</button>
+      </div>
+      <p class="hint">切换架构/模板/实体后，「探索」立即按新参数刷新；树按文件夹优先排序。</p>
+    </section>
+    <aside class="box side">
+      <div class="lab" style="margin-bottom:10px">业务实体（可收起）</div>
+      <details class="ent" open>
+        <summary><span>User · sys_user</span><span style="color:var(--muted);font-size:12px">收起</span></summary>
+        <div class="body">
+          <div class="row">
+            <div><label class="f">对象名 *</label><input value="User"/></div>
+            <div><label class="f">表名</label><input value="sys_user"/></div>
+          </div>
+          <div class="row">
+            <div><label class="f">数据库 *</label><select><option>PostgreSQL</option><option>MySQL</option></select></div>
+            <div><label class="f">ORM *</label><select><option>MyBatis-Plus</option><option>JPA</option></select></div>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" checked/> 创建</label>
+            <label><input type="checkbox" checked/> 详情</label>
+            <label><input type="checkbox" checked/> 分页</label>
+            <label><input type="checkbox" checked/> 更新</label>
+            <label><input type="checkbox"/> 删除</label>
+            <label><input type="checkbox" checked/> 导入</label>
+            <label><input type="checkbox" checked/> 导出</label>
+          </div>
+        </div>
+      </details>
+      <details class="ent">
+        <summary><span>Order · mall_order</span><span style="color:var(--muted);font-size:12px">展开</span></summary>
+        <div class="body"><span class="hint">第二个实体示例（收起态）</span></div>
+      </details>
+      <button class="add">+ 添加实体</button>
+      <p class="hint">单应用时本侧禁用并提示。</p>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

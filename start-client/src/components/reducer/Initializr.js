@@ -4,12 +4,18 @@ import set from 'lodash/set'
 import React, {useReducer} from 'react'
 
 import {getShareUrl, parseParams} from '../utils/ApiUtils'
+import {
+  DEFAULT_ARCHITECTURE,
+  deriveArchitecture,
+  isArchitectureMarker,
+} from '../utils/Architecture'
 
 export const defaultInitializrContext = {
   values: {
     project: '',
     language: '',
     boot: '',
+    architecture: DEFAULT_ARCHITECTURE,
     meta: {
       group: '',
       artifact: '',
@@ -33,6 +39,20 @@ const localStorage =
         setItem: () => {},
       }
 
+const sanitizeArchitecture = values => {
+  const deps = get(values, 'dependencies', [])
+  const hasMarker = deps.some(isArchitectureMarker)
+  let architecture = get(values, 'architecture') || DEFAULT_ARCHITECTURE
+  if (hasMarker) {
+    architecture = deriveArchitecture(deps)
+  }
+  return {
+    ...values,
+    architecture,
+    dependencies: deps.filter(id => !isArchitectureMarker(id)),
+  }
+}
+
 const getPersistedOrDefault = json => {
   const values = {
     project:
@@ -40,6 +60,8 @@ const getPersistedOrDefault = json => {
     language:
       localStorage.getItem('language') || get(json, 'defaultValues').language,
     boot: get(json, 'defaultValues').boot,
+    architecture:
+      localStorage.getItem('architecture') || DEFAULT_ARCHITECTURE,
     meta: {
       group: get(json, 'defaultValues.meta').group,
       artifact: get(json, 'defaultValues.meta').artifact,
@@ -63,6 +85,13 @@ const getPersistedOrDefault = json => {
       set(values, key, get(json, `defaultValues.${key}`))
     }
   })
+  if (
+    ['arch-single', 'arch-ddd-service', 'arch-platform'].indexOf(
+      values.architecture
+    ) === -1
+  ) {
+    values.architecture = DEFAULT_ARCHITECTURE
+  }
   return values
 }
 
@@ -72,6 +101,9 @@ const persist = changes => {
   }
   if (get(changes, 'language')) {
     localStorage.setItem('language', get(changes, 'language'))
+  }
+  if (get(changes, 'architecture')) {
+    localStorage.setItem('architecture', get(changes, 'architecture'))
   }
   if (get(changes, 'meta.packaging')) {
     localStorage.setItem('packaging', get(changes, 'meta.packaging'))
@@ -132,15 +164,19 @@ export function reducer(state, action) {
     case 'LOAD': {
       const params = get(action, 'payload.params')
       const lists = get(action, 'payload.lists')
-      const { values, errors, warnings } = parseParams(
+      const { values: parsed, errors, warnings } = parseParams(
         state.values,
         params,
         lists
       )
+      const values = sanitizeArchitecture(parsed)
       return { ...state, values, errors, warnings, share: getShareUrl(values) }
     }
     case 'ADD_DEPENDENCY': {
       const dependency = get(action, 'payload.id')
+      if (isArchitectureMarker(dependency)) {
+        return state
+      }
       const values = { ...get(state, 'values') }
       values.dependencies = [...get(values, 'dependencies'), dependency]
       return { ...state, values, share: getShareUrl(values) }

@@ -50,7 +50,13 @@ export const createTree = (files, path, fileName, zip) => {
             )
           }
         })
-        item.children = children.sort((a, b) => (a.path > b.path ? 1 : -1))
+        item.children = children.sort((a, b) => {
+          // Directories first, then files; localeCompare within each group
+          if (a.type !== b.type) {
+            return a.type === 'folder' ? -1 : 1
+          }
+          return a.filename.localeCompare(b.filename)
+        })
         item.filename = pfileName.substring(0, pfileName.length - 1)
       } else {
         item.language = getLanguage(item.filename)

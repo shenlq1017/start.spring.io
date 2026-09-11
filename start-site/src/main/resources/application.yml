@@ -204,18 +204,18 @@ initializr:
   dependencies:
     - name: Project Structure
       content:
-        - name: DDD Six-Module Microservice
+        - name: 业务微服务
           id: ddd-six-module
           groupId: org.springframework.boot
           artifactId: spring-boot
-          description: Generate a Maven multi-module DDD skeleton (contract, feign-client, domain, infrastructure, application, bootstrap). Marker dependency removed from POM; Maven only.
+          description: 生成 Maven 多模块 DDD 骨架（contract、feign-client、domain、infrastructure、application、bootstrap）。标记依赖不会写入 POM；仅 Maven。
           starter: false
           compatibilityRange: "[4.0.0,4.3.0-M1)"
-        - name: Platform Monorepo
+        - name: 平台工程
           id: platform-monorepo
           groupId: org.springframework.boot
           artifactId: spring-boot
-          description: Generate a Maven platform Monorepo skeleton (common, starters, services, gateway, deploy). Prefer over ddd-six-module when both selected. Marker removed from POM; Maven only.
+          description: 生成 Maven 平台 Monorepo 骨架（common、starters、services、gateway、deploy）。与 ddd-six-module 同时选中时优先平台工程。标记依赖不会写入 POM；仅 Maven。
           starter: false
           compatibilityRange: "[4.0.0,4.3.0-M1)"
     - name: Developer Tools

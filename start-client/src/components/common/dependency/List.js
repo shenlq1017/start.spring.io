@@ -5,13 +5,17 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { AppContext } from '../../reducer/App'
 import { IconRemove } from '../icons'
 import { InitializrContext } from '../../reducer/Initializr'
+import { isArchitectureMarker } from '../../utils/Architecture'
 
 function List() {
   const { values, dispatch } = useContext(InitializrContext)
   const { dependencies } = useContext(AppContext)
-  const list = get(values, 'dependencies', []).map(dep => {
-    return dependencies.list.find(item => item.id === dep)
-  })
+  const list = get(values, 'dependencies', [])
+    .filter(dep => !isArchitectureMarker(dep))
+    .map(dep => {
+      return dependencies.list.find(item => item.id === dep)
+    })
+    .filter(item => !!item)
   return (
     <TransitionGroup component='ul' className='dependencies-list'>
       {list.map(item => {

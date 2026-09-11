@@ -496,3 +496,46 @@ body.dark {
     outline-color: $dark-primary;
   }
 }
+
+// ---------------------------------------------------------------------------
+// P0 — light质感 (minimal): richer primary CTA, selected radio, soft shadow
+// ---------------------------------------------------------------------------
+a.button.primary,
+button.button.primary {
+  box-shadow: 0 2px 8px rgba($light-primary, 0.28);
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    box-shadow: $shadow-md, 0 4px 14px rgba($light-primary, 0.35),
+      0 0 0 3px rgba($light-primary, 0.2);
+  }
+}
+
+.radio.checked {
+  .caret {
+    box-shadow: 0 0 0 3px rgba($light-primary, 0.22);
+    border-color: $light-primary;
+  }
+}
+
+.group-radio {
+  .radio.checked {
+    font-weight: 600;
+  }
+}
+
+.control {
+  .label {
+    letter-spacing: -0.015em;
+  }
+}
+
+body.dark {
+  a.button.primary,
+  button.button.primary {
+    box-shadow: 0 2px 10px rgba($dark-primary, 0.35);
+  }
+  .radio.checked .caret {
+    box-shadow: 0 0 0 3px rgba($dark-primary, 0.28);
+    border-color: $dark-primary;
+  }
+}

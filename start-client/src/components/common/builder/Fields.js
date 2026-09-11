@@ -13,6 +13,8 @@ import {AppContext} from '../../reducer/App'
 import {Button, Radio} from '../form'
 import {Dependency} from '../dependency'
 import {InitializrContext} from '../../reducer/Initializr'
+import {ARCHITECTURE_OPTIONS, DEFAULT_ARCHITECTURE} from '../../utils/Architecture'
+import {t} from '../../../i18n/zh'
 
 function Fields({
   onSubmit,
@@ -58,7 +60,7 @@ function Fields({
           <div className='col-sticky'>
             <div className='colset'>
               <div className='left'>
-                <Control text='Project'>
+                <Control text={t('Project')}>
                   <Radio
                     name='project'
                     selected={get(values, 'project')}
@@ -70,7 +72,7 @@ function Fields({
                 </Control>
               </div>
               <div className='right'>
-                <Control text='Language'>
+                <Control text={t('Language')}>
                   <Radio
                     name='language'
                     selected={get(values, 'language')}
@@ -83,7 +85,7 @@ function Fields({
               </div>
             </div>
 
-            <Control text='Spring Boot'>
+            <Control text={t('Spring Boot')}>
               <Radio
                 name='boot'
                 selected={get(values, 'boot')}
@@ -103,16 +105,27 @@ function Fields({
               />
               {get(errors, 'boot') && (
                 <FieldError>
-                  Spring Boot {get(errors, 'boot.value')} is not supported.
-                  Please select a valid version.
+                  {t('boot.unsupported', { value: get(errors, 'boot.value') })}
                 </FieldError>
               )}
             </Control>
-            <Control text='Project Metadata'>
+
+            <Control text={t('Architecture')}>
+              <Radio
+                name='architecture'
+                selected={get(values, 'architecture') || DEFAULT_ARCHITECTURE}
+                options={ARCHITECTURE_OPTIONS}
+                onChange={value => {
+                  update({ architecture: value })
+                }}
+              />
+            </Control>
+
+            <Control text={t('Project Metadata')}>
               <FieldInput
                 id='input-group'
                 value={get(values, 'meta.group')}
-                text='Group'
+                text={t('Group')}
                 onChange={event => {
                   update({ meta: { group: event.target.value } })
                 }}
@@ -120,7 +133,7 @@ function Fields({
               <FieldInput
                 id='input-artifact'
                 value={get(values, 'meta.artifact')}
-                text='Artifact'
+                text={t('Artifact')}
                 onChange={event => {
                   update({ meta: { artifact: event.target.value } })
                 }}
@@ -128,7 +141,7 @@ function Fields({
               <FieldInput
                 id='input-packageName'
                 value={get(values, 'meta.packageName')}
-                text='Package name'
+                text={t('Package name')}
                 onChange={event => {
                   update({ meta: { packageName: event.target.value } })
                 }}
@@ -136,7 +149,7 @@ function Fields({
               <FieldRadio
                 id='input-packaging'
                 value={get(values, 'meta.packaging')}
-                text='Packaging'
+                text={t('Packaging')}
                 options={get(config, 'lists.meta.packaging')}
                 onChange={value => {
                   update({ meta: { packaging: value } })
@@ -145,7 +158,7 @@ function Fields({
               <FieldRadio
                 id='input-configurationFileFormat'
                 value={get(values, 'meta.configurationFileFormat')}
-                text='Configuration'
+                text={t('Configuration')}
                 options={get(config, 'lists.meta.configurationFileFormat')}
                 onChange={value => {
                   update({ meta: { configurationFileFormat: value } })
@@ -154,7 +167,7 @@ function Fields({
               <FieldRadio
                 id='input-java'
                 value={get(values, 'meta.java')}
-                text='Java'
+                text={t('Java')}
                 options={get(config, 'lists.meta.java')}
                 onChange={value => {
                   update({ meta: { java: value } })
@@ -170,7 +183,7 @@ function Fields({
       <Actions>
         {generating ? (
           <span className='placeholder-button placeholder-button-submit placeholder-button-special'>
-            Generating...
+            {t('Generating')}
           </span>
         ) : (
           <Button
@@ -181,7 +194,7 @@ function Fields({
             refButton={refSubmit}
             disabled={generating}
           >
-            Generate
+            {t('Generate')}
           </Button>
         )}
         <Button
@@ -190,7 +203,7 @@ function Fields({
           hotkey='Ctrl + Space'
           refButton={refExplore}
         >
-          Explore
+          {t('Explore')}
         </Button>
 
         <span className='dropdown' ref={wrapper}>
@@ -212,7 +225,7 @@ function Fields({
                   setDropdown(false)
                 }}
               >
-                Bookmark
+                {t('Bookmark')}
               </Button>
               <Button
                 id='share-project'
@@ -221,7 +234,7 @@ function Fields({
                   setDropdown(false)
                 }}
               >
-                Share
+                {t('Share')}
               </Button>
             </div>
           )}

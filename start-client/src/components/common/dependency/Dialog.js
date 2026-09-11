@@ -11,6 +11,8 @@ import { AppContext } from '../../reducer/App'
 import { IconTimes } from '../icons'
 import { InitializrContext } from '../../reducer/Initializr'
 import { Overlay } from '../form'
+import { filterVisibleDependencies } from '../../utils/Architecture'
+import { t } from '../../../i18n/zh'
 
 const sortResult = dependencies => {
   return dependencies.sort((a, b) => {
@@ -61,10 +63,18 @@ function Dialog({ onClose }) {
     jsSearchUp.addIndex('id')
     jsSearchUp.addIndex('description')
     jsSearchUp.addIndex('group')
-    jsSearchUp.addDocuments(get(depsContext, 'list'))
+    const visibleList = filterVisibleDependencies(get(depsContext, 'list'))
+    jsSearchUp.addDocuments(visibleList)
     setSearch(jsSearchUp)
 
-    setGroups(get(depsContext, 'groups', []).filter(group => group.items.length > 0))
+    setGroups(
+      get(depsContext, 'groups', [])
+        .map(group => ({
+          ...group,
+          items: filterVisibleDependencies(group.items || []),
+        }))
+        .filter(group => group.items.length > 0)
+    )
     setSelectedDeps(values.dependencies)
   }, [values, depsContext, values.dependencies])
 
@@ -82,9 +92,11 @@ function Dialog({ onClose }) {
       if (!search) {
         return
       }
-      let vals = get(depsContext, 'list', [])
+      let vals = filterVisibleDependencies(get(depsContext, 'list', []))
       if (query.trim()) {
-        vals = sortResult(search.search(query))
+        vals = sortResult(
+          filterVisibleDependencies(search.search(query))
+        )
       }
       setResult(vals)
     }
@@ -218,7 +230,7 @@ function Dialog({ onClose }) {
               <div className='control-input'>
                 <input
                   className='input'
-                  placeholder='Web, Security, JPA, Actuator, Devtools...'
+                  placeholder={t('deps.search.placeholder')}
                   ref={input}
                   value={query}
                   onKeyUp={onKeyUp}
@@ -243,7 +255,7 @@ function Dialog({ onClose }) {
                   </a>
                 </div>
                 <span className='help'>
-                  Press {windowsUtils.symb} for multiple adds{' '}
+                  {t('deps.multi.help', { symb: windowsUtils.symb })}{' '}
                 </span>
               </div>
               <ul ref={wrapper}>

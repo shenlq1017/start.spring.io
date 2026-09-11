@@ -11,14 +11,14 @@ export default function Loading() {
         <div className='left'>
           <div className='colset'>
             <div className='left'>
-              <Control text='Project'>
+              <Control text='项目'>
                 <Placeholder type='radio' width='113px' />
                 <Placeholder type='radio' width='100px' />
                 <Placeholder type='radio' width='47px' />
               </Control>
             </div>
             <div className='right'>
-              <Control text='Language'>
+              <Control text='语言'>
                 <Placeholder type='radio' width='30px' />
                 <Placeholder type='radio' width='36px' />
                 <Placeholder type='radio' width='40px' />
@@ -33,7 +33,12 @@ export default function Loading() {
             <Placeholder type='radio' width='140px' />
             <Placeholder type='radio' width='98px' />
           </Control>
-          <Control text='Project Metadata'>
+          <Control text='架构'>
+            <Placeholder type='radio' width='60px' />
+            <Placeholder type='radio' width='90px' />
+            <Placeholder type='radio' width='80px' />
+          </Control>
+          <Control text='项目元数据'>
             <div>
               <div className='control control-inline control-placeholder'>
                 <span className='placeholder-label'>Group</span>
@@ -52,7 +57,7 @@ export default function Loading() {
                 <Placeholder type='input' />
               </div>
               <div className='control control-inline control-placeholder'>
-                <span className='placeholder-label'>Package name</span>
+                <span className='placeholder-label'>包名</span>
                 <Placeholder type='input' />
               </div>
               <div
@@ -60,7 +65,7 @@ export default function Loading() {
                 style={{ height: 30 }}
               >
                 <span className='placeholder-label' style={{ marginRight: 20 }}>
-                  Packaging
+                  打包
                 </span>
                 <Placeholder type='radio' width='20px' />
                 <Placeholder type='radio' width='20px' />
@@ -70,7 +75,7 @@ export default function Loading() {
                 style={{ height: 30 }}
               >
                 <span className='placeholder-label' style={{ marginRight: 20 }}>
-                  Configuration
+                  配置格式
                 </span>
                 <Placeholder type='radio' width='20px' />
                 <Placeholder type='radio' width='20px' />
@@ -92,7 +97,7 @@ export default function Loading() {
         <div className='right'>
           <div className='control'>
             <div className='dependency-header'>
-              <span className='label'>Dependencies</span>
+              <span className='label'>依赖</span>
               <Placeholder className='placeholder-button-dep' type='button' />
             </div>
           </div>

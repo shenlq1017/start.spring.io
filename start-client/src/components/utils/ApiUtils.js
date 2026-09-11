@@ -3,6 +3,7 @@ import querystring from 'querystring'
 import set from 'lodash/set'
 
 import Extend from '../../Extend.json'
+import {applyArchitectureDependencies} from './Architecture'
 import {isInRange, parseReleases, parseVersion} from './Version'
 
 const PROPERTIES_MAPPING_URL = {
@@ -51,8 +52,9 @@ export const getShareUrl = values => {
     }
   })
   let params = `${querystring.stringify(props)}`
-  if (get(values, 'dependencies', []).length > 0) {
-    params = `${params}&dependencies=${get(values, 'dependencies').join(',')}`
+  const deps = applyArchitectureDependencies(values)
+  if (deps.length > 0) {
+    params = `${params}&dependencies=${deps.join(',')}`
   } else {
     params = `${params}&dependencies=`
   }
@@ -284,7 +286,8 @@ export const getProject = function getProject(url, values, config) {
       javaVersion: get(values, 'meta.java'),
       configurationFileFormat: get(values, 'meta.configurationFileFormat'),
     })
-    let paramsDependencies = get(values, 'dependencies', [])
+    // Architecture radio maps to marker deps (hidden from Dependencies UI)
+    let paramsDependencies = applyArchitectureDependencies(values)
       .map(dependency => {
         const dep = config.find(it => it.id === dependency)
         return isValidDependency(get(values, 'boot'), dep) ? dependency : null
