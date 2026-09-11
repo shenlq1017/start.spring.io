@@ -140,9 +140,8 @@ describe('getListValues', () => {
     for (let i = 0; i < mockDependencies.length; i += 1) {
       const id = mockDependencies[i].id
       expect(listDependencies[i].id).toBe(id)
-      expect(listDependencies[i].name).toBe(
-        translateDependency(id, 'name', mockDependencies[i].name)
-      )
+      // Name must stay English (metadata); only description is translated.
+      expect(listDependencies[i].name).toBe(mockDependencies[i].name)
       expect(listDependencies[i].description).toBe(
         translateDependency(id, 'description', mockDependencies[i].description)
       )

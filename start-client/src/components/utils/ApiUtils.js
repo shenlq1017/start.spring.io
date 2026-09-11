@@ -239,7 +239,8 @@ export const getLists = json => {
       const id = `${get(item, 'id', '')}`
       const val = {
         id,
-        name: translateDependency(id, 'name', `${get(item, 'name', '')}`),
+        // Keep official English metadata name; only description is localized.
+        name: `${get(item, 'name', '')}`,
         group: translateDependencyGroup(`${group.name}`),
         description: translateDependency(
           id,

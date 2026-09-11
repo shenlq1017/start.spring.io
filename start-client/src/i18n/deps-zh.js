@@ -1,308 +1,289 @@
 /**
- * Chinese names/descriptions for Dependencies panel.
- * Unknown ids fall back to English metadata from the server.
+ * Chinese descriptions for Dependencies panel.
+ * Dependency NAME stays English (from Initializr metadata).
+ * Map: dep id → Chinese description only.
  */
 const DEP = {
+  // Project Structure
+  "ddd-six-module": '生成 Maven 多模块 DDD 骨架（contract、feign-client、domain、infrastructure、application、bootstrap）。标记依赖不会写入 POM；仅 Maven。',
+  "platform-monorepo": '生成 Maven 平台 Monorepo 骨架（common、starters、services、gateway、deploy）。与 ddd-six-module 同时选中时优先平台工程。标记依赖不会写入 POM；仅 Maven。',
   // Developer Tools
-  native: {
-    name: 'GraalVM 原生镜像',
-    description: '使用 GraalVM native-image 将 Spring 应用编译为原生可执行文件。',
-  },
-  'dgs-codegen': {
-    name: 'GraphQL DGS 代码生成',
-    description: '通过解析 Schema 文件，为 GraphQL API 生成数据类型与类型安全客户端。',
-  },
-  devtools: {
-    name: 'Spring Boot DevTools',
-    description: '提供快速重启、LiveReload 以及增强开发体验的配置。',
-  },
-  lombok: {
-    name: 'Lombok',
-    description: '通过注解减少 Java 样板代码（getter/setter/构造器等）。',
-  },
-  mapstruct: {
-    name: 'MapStruct',
-    description: '类型安全的 Bean 映射注解处理器（对象映射代码生成）。',
-  },
-  'configuration-processor': {
-    name: '配置注解处理器',
-    description: '为自定义配置键生成元数据，便于 IDE 提示与自动完成。',
-  },
-  'docker-compose': {
-    name: 'Docker Compose 支持',
-    description: '在开发阶段集成 Docker Compose，提升本地联调体验。',
-  },
-  modulith: {
-    name: 'Spring Modulith',
-    description: '构建模块化单体应用的 Spring 支持。',
-  },
+  native: '使用 GraalVM native-image 将 Spring 应用编译为原生可执行文件。',
+  "dgs-codegen": '通过解析 Schema 文件，为 GraphQL API 生成数据类型与类型安全客户端。',
+  devtools: '提供快速重启、LiveReload 以及增强开发体验的配置。',
+  lombok: '通过注解减少 Java 样板代码（getter/setter/构造器等）。',
+  mapstruct: '类型安全的 Bean 映射注解处理器（对象映射代码生成）。',
+  "configuration-processor": '为自定义配置键生成元数据，便于 IDE 提示与自动完成。',
+  "docker-compose": '在开发阶段集成 Docker Compose，提升本地联调体验。',
+  modulith: '构建模块化单体应用的 Spring 支持。',
   // Web
-  web: {
-    name: 'Spring Web',
-    description: '使用 Spring MVC 构建 Web / RESTful 应用，默认嵌入 Tomcat。',
-  },
-  webflux: {
-    name: 'Spring Reactive Web',
-    description: '使用 Spring WebFlux 与 Netty 构建响应式 Web 应用。',
-  },
-  'spring-restclient': {
-    name: 'HTTP 客户端',
-    description: 'Spring 同步 HTTP 客户端支持。',
-  },
-  'spring-webclient': {
-    name: '响应式 HTTP 客户端',
-    description: '基于 WebClient 的响应式 HTTP 客户端。',
-  },
-  graphql: {
-    name: 'Spring for GraphQL',
-    description: '使用 Spring for GraphQL 构建 GraphQL 应用。',
-  },
-  'data-rest': {
-    name: 'REST 仓储',
-    description: '将 Spring Data 仓储以超媒体驱动的 REST 资源暴露。',
-  },
-  hateoas: {
-    name: 'Spring HATEOAS',
-    description: '简化基于超媒体的 RESTful API 开发。',
-  },
-  'web-services': {
-    name: 'Spring Web Services',
-    description: '面向契约优先的 SOAP Web 服务开发。',
-  },
-  jersey: {
-    name: 'Jersey',
-    description: 'JAX-RS 参考实现，用于构建 RESTful Web 服务。',
-  },
-  vaadin: {
-    name: 'Vaadin',
-    description: '面向 Spring 的全栈 Web 应用平台。',
-  },
-  htmx: {
-    name: 'htmx',
-    description: '用超文本的简单方式构建现代用户界面。',
-  },
-  'springdoc-openapi': {
-    name: 'SpringDoc OpenAPI',
-    description: '为 Spring Web 应用添加 OpenAPI / Swagger 文档。',
-  },
-  knife4j: {
-    name: 'Knife4j',
-    description: '增强版 OpenAPI 3 UI（访问 /doc.html），国内常用 Swagger 增强。',
-  },
-  thymeleaf: {
-    name: 'Thymeleaf',
-    description: '现代服务端 Java 模板引擎。',
-  },
-  freemarker: {
-    name: 'Apache FreeMarker',
-    description: '基于模板的文本生成引擎。',
-  },
-  mustache: {
-    name: 'Mustache',
-    description: '无逻辑模板引擎。',
-  },
+  web: '使用 Spring MVC 构建 Web / RESTful 应用，默认嵌入 Tomcat。',
+  webflux: '使用 Spring WebFlux 与 Netty 构建响应式 Web 应用。',
+  "spring-restclient": 'Spring 同步 HTTP 客户端支持。',
+  "spring-webclient": '基于 WebClient 的响应式 HTTP 客户端。',
+  graphql: '使用 Spring for GraphQL 构建 GraphQL 应用。',
+  "data-rest": '将 Spring Data 仓储以超媒体驱动的 REST 资源暴露。',
+  "session-data-mongodb": '基于 Spring Data MongoDB 的用户会话管理。',
+  "session-data-redis": '基于 Redis 的用户会话管理。',
+  "session-hazelcast": '基于 Hazelcast 的用户会话管理。',
+  "session-jdbc": '基于 JDBC 的用户会话管理。',
+  "data-rest-explorer": 'Rest Repositories 的 HAL Explorer（浏览超媒体 API）。',
+  hateoas: '简化基于超媒体的 RESTful API 开发。',
+  "web-services": '面向契约优先的 SOAP Web 服务开发。',
+  jersey: 'JAX-RS 参考实现，用于构建 RESTful Web 服务。',
+  vaadin: '面向 Spring 的全栈 Web 应用平台。',
+  "netflix-dgs": 'Netflix Domain Graph Service 框架，用于构建 GraphQL 服务。',
+  htmx: '用超文本的简单方式构建现代用户界面。',
+  "springdoc-openapi": '为 Spring Web 应用添加 OpenAPI / Swagger 文档。',
+  knife4j: '增强版 OpenAPI 3 UI（访问 /doc.html），国内常用 Swagger 增强。',
+  // Template Engines
+  thymeleaf: '现代服务端 Java 模板引擎。',
+  freemarker: '基于模板的文本生成引擎。',
+  mustache: '无逻辑模板引擎。',
+  "groovy-templates": '基于 Groovy 的服务端模板引擎。',
+  jte: '高性能 Java 模板引擎（编译型）。',
   // Security
-  security: {
-    name: 'Spring Security',
-    description: '高度可定制的认证与访问控制框架。',
-  },
-  'oauth2-client': {
-    name: 'OAuth2 客户端',
-    description: 'Spring Security OAuth2 / OIDC 客户端集成。',
-  },
-  'oauth2-authorization-server': {
-    name: 'OAuth2 授权服务器',
-    description: 'Spring Authorization Server 支持。',
-  },
-  'oauth2-resource-server': {
-    name: 'OAuth2 资源服务器',
-    description: 'Spring Security OAuth2 资源服务器支持。',
-  },
-  'sa-token': {
-    name: 'Sa-Token',
-    description: '国产轻量级权限认证框架（登录认证 / 权限校验 / SSO）。',
-  },
-  // SQL / Persistence
-  jdbc: {
-    name: 'JDBC API',
-    description: '标准 JDBC 数据库访问支持。',
-  },
-  'data-jpa': {
-    name: 'Spring Data JPA',
-    description: '使用 Spring Data 与 Hibernate 持久化到 SQL 数据库。',
-  },
-  'data-jdbc': {
-    name: 'Spring Data JDBC',
-    description: '使用纯 JDBC 与 Spring Data 持久化到 SQL 数据库。',
-  },
-  mybatis: {
-    name: 'MyBatis',
-    description: '支持自定义 SQL、存储过程与高级映射的持久层框架。',
-  },
-  'mybatis-plus': {
-    name: 'MyBatis-Plus',
-    description: 'MyBatis 增强工具包（CRUD / 条件构造器 / 分页）。',
-  },
-  flyway: {
-    name: 'Flyway 数据库迁移',
-    description: '数据库版本控制与迁移工具。',
-  },
-  liquibase: {
-    name: 'Liquibase 数据库迁移',
-    description: '数据库变更管理与版本控制。',
-  },
-  h2: {
-    name: 'H2 数据库',
-    description: '快速内存数据库，支持 JDBC / R2DBC。',
-  },
-  mysql: {
-    name: 'MySQL 驱动',
-    description: 'MySQL JDBC 驱动。',
-  },
-  mariadb: {
-    name: 'MariaDB 驱动',
-    description: 'MariaDB JDBC / R2DBC 驱动。',
-  },
-  postgresql: {
-    name: 'PostgreSQL 驱动',
-    description: 'PostgreSQL JDBC / R2DBC 驱动。',
-  },
-  oracle: {
-    name: 'Oracle 驱动',
-    description: 'Oracle JDBC 驱动。',
-  },
-  sqlserver: {
-    name: 'MS SQL Server 驱动',
-    description: 'Microsoft SQL Server / Azure SQL JDBC 与 R2DBC 驱动。',
-  },
-  // China ecosystem
-  hutool: {
-    name: 'Hutool',
-    description: '国产 Java 工具集（日期 / 加密 / HTTP / IO 等）。',
-  },
-  easyexcel: {
-    name: 'EasyExcel',
-    description: '阿里巴巴 Excel 读写库，适合大文件导入导出。',
-  },
-  // NoSQL / Cache / Messaging
-  'data-redis': {
-    name: 'Spring Data Redis',
-    description: 'Redis 访问与驱动集成。',
-  },
-  'data-redis-reactive': {
-    name: '响应式 Redis',
-    description: '响应式 Spring Data Redis 支持。',
-  },
-  mongodb: {
-    name: 'MongoDB',
-    description: 'MongoDB 文档数据库驱动。',
-  },
-  'data-mongodb': {
-    name: 'Spring Data MongoDB',
-    description: '使用 Spring Data 访问 MongoDB。',
-  },
-  elasticsearch: {
-    name: 'Elasticsearch',
-    description: '分布式搜索与分析引擎。',
-  },
-  'data-elasticsearch': {
-    name: 'Spring Data Elasticsearch',
-    description: '使用 Spring Data 访问 Elasticsearch。',
-  },
-  amqp: {
-    name: 'Spring for RabbitMQ',
-    description: '基于 AMQP 的消息发送与接收。',
-  },
-  kafka: {
-    name: 'Spring for Apache Kafka',
-    description: '发布、订阅与处理 Kafka 记录流。',
-  },
+  security: '高度可定制的认证与访问控制框架。',
+  "oauth2-client": 'Spring Security OAuth2 / OIDC 客户端集成。',
+  "oauth2-authorization-server": 'Spring Authorization Server 支持。',
+  "oauth2-resource-server": 'Spring Security OAuth2 资源服务器支持。',
+  "security-saml2": 'Spring Security SAML 2.0 服务提供方支持。',
+  "spring-security-webauthn": 'Spring Security 的 WebAuthn / Passkey 支持。',
+  ldap: '认证与目录服务的 LDAP 支持。',
+  "data-ldap": '使用 Spring Data 访问 LDAP 目录。',
+  okta: 'Okta 身份认证与授权集成。',
+  "sa-token": '国产轻量级权限认证框架（登录认证 / 权限校验 / SSO）。',
+  // SQL
+  jdbc: '标准 JDBC 数据库访问支持。',
+  r2dbc: '响应式关系型数据库连接（R2DBC）支持。',
+  "data-jpa": '使用 Spring Data 与 Hibernate 持久化到 SQL 数据库。',
+  "data-jdbc": '使用纯 JDBC 与 Spring Data 持久化到 SQL 数据库。',
+  "data-r2dbc": '使用 Spring Data 与 R2DBC 响应式持久化。',
+  mybatis: '支持自定义 SQL、存储过程与高级映射的持久层框架。',
+  "mybatis-plus": 'MyBatis 增强工具包（CRUD / 条件构造器 / 分页）。',
+  liquibase: '数据库变更管理与版本控制。',
+  flyway: '数据库版本控制与迁移工具。',
+  jooq: '类型安全的 SQL 构建与代码生成访问层。',
+  db2: 'IBM DB2 JDBC 驱动。',
+  derby: 'Apache Derby 嵌入式数据库。',
+  h2: '快速内存数据库，支持 JDBC / R2DBC。',
+  hsql: 'HyperSQL（HSQLDB）数据库驱动。',
+  mariadb: 'MariaDB JDBC / R2DBC 驱动。',
+  sqlserver: 'Microsoft SQL Server / Azure SQL JDBC 与 R2DBC 驱动。',
+  mysql: 'MySQL JDBC 驱动。',
+  oracle: 'Oracle JDBC 驱动。',
+  postgresql: 'PostgreSQL JDBC / R2DBC 驱动。',
+  sqlite: 'SQLite JDBC 驱动。',
+  // China Ecosystem
+  hutool: '国产 Java 工具集（日期 / 加密 / HTTP / IO 等）。',
+  easyexcel: '阿里巴巴 Excel 读写库，适合大文件导入导出。',
+  // NoSQL
+  "data-redis": 'Redis 访问与驱动集成。',
+  "data-redis-reactive": '响应式 Spring Data Redis 支持。',
+  mongodb: 'MongoDB 文档数据库驱动。',
+  "data-mongodb": '使用 Spring Data 访问 MongoDB。',
+  "data-mongodb-reactive": '使用 Spring Data 响应式访问 MongoDB。',
+  elasticsearch: '分布式搜索与分析引擎。',
+  "data-elasticsearch": '使用 Spring Data 访问 Elasticsearch。',
+  cassandra: 'Apache Cassandra 驱动。',
+  "data-cassandra": '使用 Spring Data 访问 Apache Cassandra。',
+  "data-cassandra-reactive": '使用 Spring Data 响应式访问 Cassandra。',
+  couchbase: 'Couchbase 驱动。',
+  "data-couchbase": '使用 Spring Data 访问 Couchbase。',
+  "data-couchbase-reactive": '使用 Spring Data 响应式访问 Couchbase。',
+  neo4j: 'Neo4j 图数据库驱动。',
+  "data-neo4j": '使用 Spring Data 访问 Neo4j。',
+  // Messaging
+  integration: '企业集成模式（通道、端点、适配器等）。',
+  amqp: '基于 AMQP 的消息发送与接收（RabbitMQ）。',
+  "amqp-streams": 'RabbitMQ Streams 支持。',
+  kafka: '发布、订阅与处理 Kafka 记录流。',
+  "kafka-streams": '使用 Kafka Streams 构建流处理应用。',
+  activemq: 'Apache ActiveMQ 5 消息中间件集成。',
+  artemis: 'Apache ActiveMQ Artemis 消息中间件集成。',
+  pulsar: 'Apache Pulsar 消息中间件集成。',
+  websocket: '基于 Servlet 的 WebSocket（SockJS / STOMP）。',
+  rsocket: 'RSocket 应用协议支持。',
+  camel: 'Apache Camel 路由与集成框架。',
+  solace: 'Solace PubSub+ 消息平台集成。',
+  // I/O
+  batch: '批处理应用（事务、重试/跳过、分块处理）。',
+  "batch-jdbc": 'Spring Batch 的 JDBC 相关支持。',
+  "batch-data-mongodb": 'Spring Batch 的 MongoDB 相关支持。',
+  hazelcast: 'Hazelcast 分布式数据网格 / 缓存。',
+  validation: '基于 Hibernate Validator 的 Bean Validation。',
+  mail: '使用 JavaMailSender 发送邮件。',
+  quartz: '使用 Quartz 调度任务。',
+  jobrunr: '基于 Java 的后台任务调度与处理（JobRunr）。',
+  cache: '提供缓存相关操作与抽象。',
+  "spring-shell": '构建命令行应用的 Spring Shell。',
+  "spring-grpc-server": 'Spring gRPC 服务端支持。',
+  "spring-grpc-client": 'Spring gRPC 客户端支持。',
   // Ops
-  actuator: {
-    name: 'Spring Boot Actuator',
-    description: '内置（或自定义）端点，用于监控与管理应用。',
-  },
-  prometheus: {
-    name: 'Prometheus',
-    description: '以 Prometheus 格式暴露 Micrometer 指标。',
-  },
-  zipkin: {
-    name: 'Zipkin',
-    description: '将链路追踪 span / trace 暴露给 Zipkin。',
-  },
-  testcontainers: {
-    name: 'Testcontainers',
-    description: '为集成测试提供一次性的数据库等容器实例。',
-  },
-  validation: {
-    name: '校验',
-    description: '基于 Hibernate Validator 的 Bean Validation。',
-  },
-  cache: {
-    name: 'Spring 缓存抽象',
-    description: '提供缓存相关操作与抽象。',
-  },
-  mail: {
-    name: 'Java Mail Sender',
-    description: '使用 JavaMailSender 发送邮件。',
-  },
-  quartz: {
-    name: 'Quartz 调度器',
-    description: '使用 Quartz 调度任务。',
-  },
-  batch: {
-    name: 'Spring Batch',
-    description: '批处理应用（事务、重试/跳过、分块处理）。',
-  },
-  websocket: {
-    name: 'WebSocket',
-    description: '基于 Servlet 的 WebSocket（SockJS / STOMP）。',
-  },
+  actuator: '内置（或自定义）端点，用于监控与管理应用。',
+  "sbom-cyclone-dx": '生成 CycloneDX 软件物料清单（SBOM）。',
+  "codecentric-spring-boot-admin-client": 'Spring Boot Admin 客户端，向 Admin Server 注册。',
+  "codecentric-spring-boot-admin-server": 'Spring Boot Admin 服务端，可视化监控客户端。',
+  sentry: '将错误与性能数据上报到 Sentry。',
+  cloudfoundry: 'Cloud Foundry 平台部署相关支持。',
+  // Observability
+  datadog: '以 Datadog 格式暴露 Micrometer 指标。',
+  dynatrace: '以 Dynatrace 格式暴露 Micrometer 指标。',
+  influx: '以 InfluxDB 格式暴露 Micrometer 指标。',
+  graphite: '以 Graphite 格式暴露 Micrometer 指标。',
+  "new-relic": '以 New Relic 格式暴露 Micrometer 指标。',
+  "otlp-metrics": '通过 OTLP 导出 Micrometer 指标。',
+  prometheus: '以 Prometheus 格式暴露 Micrometer 指标。',
+  "datasource-micrometer": '数据源相关的 Micrometer 观测支持。',
+  "distributed-tracing": '分布式链路追踪支持（Micrometer Tracing）。',
+  opentelemetry: 'OpenTelemetry 观测数据导出。',
+  zipkin: '将链路追踪 span / trace 暴露给 Zipkin。',
+  // Testing
+  restdocs: '使用 Spring REST Docs 生成 API 文档片段。',
+  testcontainers: '为集成测试提供一次性的数据库等容器实例。',
+  "unboundid-ldap": '嵌入式 LDAP 服务器，便于测试。',
   // Spring Cloud
-  'cloud-config-client': {
-    name: 'Config 客户端',
-    description: '连接 Spring Cloud Config Server 拉取配置。',
-  },
-  'cloud-eureka': {
-    name: 'Eureka 发现客户端',
-    description: '服务发现与注册（Eureka）。',
-  },
-  'cloud-gateway': {
-    name: 'Gateway',
-    description: 'Spring Cloud Gateway API 路由网关。',
-  },
-  'session-data-redis': {
-    name: 'Spring Session Redis',
-    description: '基于 Redis 的用户会话管理。',
-  },
+  "cloud-starter": 'Spring Cloud 引导与通用自动配置。',
+  "cloud-function": '函数式计算编程模型（本地或云端）。',
+  "cloud-task": '短生命周期微服务任务支持。',
+  // Spring Cloud Config
+  "cloud-config-client": '连接 Spring Cloud Config Server 拉取配置。',
+  "cloud-config-server": '集中式配置服务端。',
+  "cloud-starter-vault-config": '从 HashiCorp Vault 加载配置。',
+  "cloud-starter-zookeeper-config": '从 Apache ZooKeeper 加载配置。',
+  "cloud-starter-consul-config": '从 Consul 加载配置。',
+  // Spring Cloud Discovery
+  "cloud-eureka": '服务发现与注册（Eureka 客户端）。',
+  "cloud-eureka-server": 'Eureka 服务注册中心。',
+  "cloud-starter-zookeeper-discovery": '基于 ZooKeeper 的服务发现。',
+  "cloud-starter-consul-discovery": '基于 Consul 的服务发现。',
+  // Spring Cloud Routing
+  "cloud-gateway": 'Spring Cloud Gateway API 路由网关。',
+  "cloud-gateway-reactive": '响应式 Spring Cloud Gateway。',
+  "cloud-feign": '声明式 HTTP 客户端（OpenFeign）。',
+  "cloud-loadbalancer": '客户端负载均衡。',
+  // Spring Cloud Circuit Breaker
+  "cloud-resilience4j": '基于 Resilience4j 的熔断、限流与重试。',
+  // Spring Cloud Messaging
+  "cloud-bus": '跨服务配置刷新与事件总线。',
+  "cloud-stream": '与消息中间件绑定的事件驱动微服务。',
+  // VMware Tanzu Application Service
+  "scs-config-client": 'Tanzu Application Service 配置客户端。',
+  "scs-service-registry": 'Tanzu Application Service 服务注册。',
+  // VMware Tanzu Spring Enterprise Extensions
+  "tanzu-governance-starter": 'VMware Tanzu 企业扩展：Governance Starter [Enterprise]。',
+  "tanzu-scg-access-control": 'VMware Tanzu 企业扩展：Spring Cloud Gateway Access Control [Enterprise]。',
+  "tanzu-scg-custom": 'VMware Tanzu 企业扩展：Spring Cloud Gateway Custom [Enterprise]。',
+  "tanzu-scg-graphql": 'VMware Tanzu 企业扩展：Spring Cloud Gateway GraphQL [Enterprise]。',
+  "tanzu-scg-sso": 'VMware Tanzu 企业扩展：Spring Cloud Gateway Single Sign On [Enterprise]。',
+  "tanzu-scg-traffic-control": 'VMware Tanzu 企业扩展：Spring Cloud Gateway Traffic Control [Enterprise]。',
+  "tanzu-scg-transformation": 'VMware Tanzu 企业扩展：Spring Cloud Gateway Transformation [Enterprise]。',
+  // VMware Tanzu Spring SDK
+  "tanzu-spring-sdk": 'VMware Tanzu 企业扩展：Tanzu Spring SDK [Enterprise]。',
+  // Microsoft Azure
+  "azure-support": 'Microsoft Azure 核心支持。',
+  "azure-active-directory": 'Azure Active Directory 集成。',
+  "azure-cosmos-db": 'Azure Cosmos DB 集成。',
+  "azure-keyvault": 'Azure Key Vault 密钥与机密管理。',
+  "azure-storage": 'Azure Storage 集成。',
+  // Google Cloud
+  "cloud-gcp": 'Google Cloud 核心支持。',
+  "cloud-gcp-pubsub": 'Google Cloud Pub/Sub 消息。',
+  "cloud-gcp-storage": 'Google Cloud Storage 对象存储。',
+  // AI
+  "spring-ai-anthropic": '接入 Anthropic Claude 大模型。',
+  "spring-ai-vectordb-azure": 'Spring AI 向量库：Azure AI Search。',
+  "spring-ai-bedrock": '接入 Amazon Bedrock 大模型。',
+  "spring-ai-bedrock-converse": 'Amazon Bedrock Converse API 支持。',
+  "spring-ai-vectordb-bedrock-knowledgebase": 'Spring AI 向量库：Amazon Bedrock Knowledge Base。',
+  "spring-ai-deepseek": '接入 DeepSeek 大模型。',
+  "spring-ai-elevenlabs": '接入 ElevenLabs 语音能力。',
+  "spring-ai-google-genai": '接入 Google GenAI。',
+  "spring-ai-google-genai-embedding": 'Google GenAI Embeddings 支持。',
+  "spring-ai-vectordb-cassandra": 'Spring AI 向量库：Apache Cassandra Vector Database。',
+  "spring-ai-vectordb-chroma": 'Spring AI 向量库：Chroma Vector Database。',
+  "spring-ai-vectordb-couchbase": 'Spring AI 向量库：Couchbase Vector Database。',
+  "spring-ai-vectordb-elasticsearch": 'Spring AI 向量库：Elasticsearch Vector Database。',
+  "spring-ai-vectordb-gemfire": 'Spring AI 向量库：GemFire Vector Database。',
+  "spring-ai-mcp-server": 'Model Context Protocol（MCP）服务端。',
+  "spring-ai-mcp-client": 'Model Context Protocol（MCP）客户端。',
+  "spring-ai-tool-search-advisor": '工具搜索 Advisor，辅助模型选择工具。',
+  "mcp-security": 'Model Context Protocol 安全（实验性）。',
+  "spring-ai-vectordb-milvus": 'Spring AI 向量库：Milvus Vector Database。',
+  "spring-ai-mistral": '接入 Mistral AI 大模型。',
+  "spring-ai-vectordb-mongodb-atlas": 'Spring AI 向量库：MongoDB Atlas Vector Database。',
+  "spring-ai-vectordb-neo4j": 'Spring AI 向量库：Neo4j Vector Database。',
+  "spring-ai-vectordb-opensearch": 'Spring AI 向量库：OpenSearch Vector Database。',
+  "spring-ai-vectordb-aws-opensearch": 'Spring AI 向量库：AWS OpenSearch Vector Database。',
+  "spring-ai-ollama": '接入本地 Ollama 大模型。',
+  "spring-ai-openai": '接入 OpenAI 大模型与 Embeddings。',
+  "spring-ai-chat-memory-repository-in-memory": 'Spring AI 对话记忆仓储：In-memory Chat Memory Repository。',
+  "spring-ai-chat-memory-repository-jdbc": 'Spring AI 对话记忆仓储：JDBC Chat Memory Repository。',
+  "spring-ai-chat-memory-repository-cassandra": 'Spring AI 对话记忆仓储：Cassandra Chat Memory Repository。',
+  "spring-ai-chat-memory-repository-mongodb": 'Spring AI 对话记忆仓储：MongoDB Chat Memory Repository。',
+  "spring-ai-chat-memory-repository-neo4j": 'Spring AI 对话记忆仓储：Neo4j Chat Memory Repository。',
+  "spring-ai-chat-memory-repository-redis": 'Spring AI 对话记忆仓储：Redis Chat Memory Repository。',
+  "spring-ai-vectordb-oracle": 'Spring AI 向量库：Oracle Vector Database。',
+  "spring-ai-vectordb-pgvector": 'Spring AI 向量库：PGvector Vector Database。',
+  "spring-ai-vectordb-pinecone": 'Spring AI 向量库：Pinecone Vector Database。',
+  "spring-ai-postgresml": 'PostgresML 机器学习集成。',
+  "spring-ai-vectordb-redis": 'Spring AI 向量库：Redis Search and Query Vector Database。',
+  "spring-ai-vectordb-s3": 'Spring AI 向量库：S3 Vector Database。',
+  "spring-ai-vectordb-mariadb": 'Spring AI 向量库：MariaDB Vector Database。',
+  "spring-ai-stabilityai": '接入 Stability AI 图像生成。',
+  "spring-ai-transformers": '基于 ONNX Transformers 的本地 Embeddings。',
+  "spring-ai-vertexai-embeddings": 'Google Vertex AI Embeddings。',
+  "spring-ai-vectordb-qdrant": 'Spring AI 向量库：Qdrant Vector Database。',
+  "spring-ai-vectordb-typesense": 'Spring AI 向量库：Typesense Vector Database。',
+  "spring-ai-vectordb-weaviate": 'Spring AI 向量库：Weaviate Vector Database。',
+  "spring-ai-markdown-document-reader": 'Markdown 文档读取器（RAG 语料）。',
+  "spring-ai-tika-document-reader": 'Apache Tika 文档读取器（RAG 语料）。',
+  "spring-ai-pdf-document-reader": 'PDF 文档读取器（RAG 语料）。',
+  "spring-ai-jsoup-document-reader": 'JSoup HTML 文档读取器（RAG 语料）。',
+  "timefold-solver": 'Timefold 约束求解器（规划 / 排程）。',
 }
 
 const GROUP = {
-  'Developer Tools': '开发者工具',
-  Web: 'Web',
-  'Template Engines': '模板引擎',
-  Security: '安全',
-  SQL: 'SQL',
-  NoSQL: 'NoSQL',
-  Messaging: '消息',
-  'I/O': 'I/O',
-  Ops: '运维监控',
-  Observability: '可观测性',
-  Testing: '测试',
-  'Spring Cloud': 'Spring Cloud',
-  'Spring Cloud Config': 'Spring Cloud Config',
-  'Spring Cloud Discovery': 'Spring Cloud 服务发现',
-  'Spring Cloud Routing': 'Spring Cloud 路由',
-  'Spring Cloud Circuit Breaker': 'Spring Cloud 熔断',
-  'Project Structure': '项目结构',
-  'China Ecosystem': '国内生态',
-  Ecosystem: '生态扩展',
+  "Developer Tools": "开发者工具",
+  "Web": "Web",
+  "Template Engines": "模板引擎",
+  "Security": "安全",
+  "SQL": "SQL",
+  "NoSQL": "NoSQL",
+  "Messaging": "消息",
+  "I/O": "I/O",
+  "Ops": "运维监控",
+  "Observability": "可观测性",
+  "Testing": "测试",
+  "Spring Cloud": "Spring Cloud",
+  "Spring Cloud Config": "Spring Cloud Config",
+  "Spring Cloud Discovery": "Spring Cloud 服务发现",
+  "Spring Cloud Routing": "Spring Cloud 路由",
+  "Spring Cloud Circuit Breaker": "Spring Cloud 熔断",
+  "Spring Cloud Messaging": "Spring Cloud 消息",
+  "Project Structure": "项目结构",
+  "China Ecosystem": "国内生态",
+  "Ecosystem": "生态扩展",
+  "AI": "AI",
+  "Microsoft Azure": "Microsoft Azure",
+  "Google Cloud": "Google Cloud",
+  "VMware Tanzu Application Service": "VMware Tanzu Application Service",
+  "VMware Tanzu Spring Enterprise Extensions": "VMware Tanzu Spring 企业扩展",
+  "VMware Tanzu Spring SDK": "VMware Tanzu Spring SDK",
 }
 
+/**
+ * @param {string} id dependency id
+ * @param {'description'|'name'} field only 'description' is translated; 'name' always falls back
+ * @param {string} fallback English metadata value
+ */
 export function translateDependency(id, field, fallback) {
-  const entry = DEP[id]
-  if (entry && entry[field]) {
-    return entry[field]
+  if (field === 'name') {
+    return fallback || ''
+  }
+  const desc = DEP[id]
+  if (desc) {
+    return desc
   }
   return fallback || ''
 }
@@ -312,3 +293,4 @@ export function translateDependencyGroup(name) {
 }
 
 export default DEP
+
