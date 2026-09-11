@@ -1,3 +1,7 @@
+application:
+  # Set true on networks that break TLS to api.spring.io / Maven Central helpers
+  offline: false
+
 logging:
   level:
     org.springframework.core.env: warn

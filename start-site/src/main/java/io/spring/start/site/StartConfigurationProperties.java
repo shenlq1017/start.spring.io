@@ -22,14 +22,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Configuration properties for the application.
  *
  * @author Moritz Halbritter
+ * @author Shen Liqiang
  */
 @ConfigurationProperties(prefix = "application")
 public class StartConfigurationProperties {
 
 	/**
+	 * When true, skip fetching Boot versions from api.spring.io (avoids outbound HTTPS).
+	 */
+	private boolean offline;
+
+	/**
 	 * Configuration for the Maven version resolver.
 	 */
 	private final MavenVersionResolver mavenVersionResolver = new MavenVersionResolver();
+
+	public boolean isOffline() {
+		return this.offline;
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
+	}
 
 	public MavenVersionResolver getMavenVersionResolver() {
 		return this.mavenVersionResolver;

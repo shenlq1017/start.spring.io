@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import io.spring.initializr.metadata.InitializrMetadata;
 import io.spring.initializr.versionresolver.MavenVersionResolver;
+import io.spring.initializr.web.support.InitializrMetadataUpdateStrategy;
 import io.spring.start.site.container.SimpleDockerServiceResolver;
 import io.spring.start.site.project.ProjectDescriptionCustomizerConfiguration;
 import io.spring.start.site.support.CacheableMavenVersionResolver;
@@ -31,6 +33,7 @@ import tools.jackson.databind.json.JsonMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.cache.annotation.EnableCaching;
@@ -45,6 +48,7 @@ import org.springframework.web.client.RestTemplate;
  * Initializr website application.
  *
  * @author Stephane Nicoll
+ * @author Shen Liqiang
  */
 @EnableAutoConfiguration
 @SpringBootConfiguration
@@ -64,11 +68,19 @@ public class StartApplication {
 	}
 
 	@Bean
+	@ConditionalOnProperty(prefix = "application", name = "offline", havingValue = "false", matchIfMissing = true)
 	public StartInitializrMetadataUpdateStrategy initializrMetadataUpdateStrategy(
 			RestTemplateBuilder restTemplateBuilder, JsonMapper jsonMapper) {
 		RestTemplate restTemplate = restTemplateBuilder.defaultHeader(HttpHeaders.USER_AGENT, "start.spring.io")
 			.build();
 		return new StartInitializrMetadataUpdateStrategy(restTemplate, jsonMapper);
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "application", name = "offline", havingValue = "true")
+	public InitializrMetadataUpdateStrategy offlineInitializrMetadataUpdateStrategy() {
+		// Keep YAML metadata as-is; do not call api.spring.io.
+		return (InitializrMetadata metadata) -> metadata;
 	}
 
 	@Bean
