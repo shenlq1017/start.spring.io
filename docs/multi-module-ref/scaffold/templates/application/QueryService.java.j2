@@ -1,0 +1,16 @@
+package {{ base_package }}.{{ prefix }}.service;
+
+import com.enterprise.common.core.page.PageResult;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Query{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}SummaryResponse;
+
+/**
+ * {{ description }}查询服务（读侧 CQRS）：直接投影 DTO，不加载聚合、不触发领域逻辑
+ */
+public interface {{ entity }}QueryService {
+
+    {{ entity }}DetailResponse detail(String id);
+
+    PageResult<{{ entity }}SummaryResponse> page(Query{{ entity }}Request query);
+}

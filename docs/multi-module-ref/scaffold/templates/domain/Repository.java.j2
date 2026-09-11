@@ -1,0 +1,22 @@
+package {{ base_package }}.{{ prefix }}.domain.repository;
+
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }};
+import {{ base_package }}.{{ prefix }}.domain.query.{{ entity }}Query;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * {{ description }}仓储接口：domain 层定义，infrastructure 层实现
+ * 方法签名只出现领域类型，禁止暴露 PO / IPage
+ */
+public interface {{ entity }}Repository {
+
+    {{ entity }} save({{ entity }} entity);
+
+    Optional<{{ entity }}> findById(String id);
+
+    List<{{ entity }}> findByQuery({{ entity }}Query query);
+
+    void deleteById(String id);
+}

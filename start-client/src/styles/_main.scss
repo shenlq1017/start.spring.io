@@ -417,7 +417,7 @@ a.button,
 button.button {
   display: inline-block;
   position: relative;
-  border-radius: 4px;
+  border-radius: $spring-radius;
   border: 2px solid $light-color;
   color: $light-color;
   padding: 0;
@@ -721,7 +721,7 @@ button.button {
       fill: $light-primary;
     }
     #header h2 {
-      color: #222;
+      color: #0f172a;
     }
     #header .switch-mobile {
       display: none;

@@ -1,0 +1,30 @@
+package {{ base_package }}.{{ prefix }}.contract.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.jspecify.annotations.Nullable;
+
+import java.io.Serial;
+import java.io.Serializable;
+
+/**
+ * {{ description }}查询请求
+ */
+@Schema(description = "{{ description }}查询请求")
+public record Query{{ entity }}Request(
+        @Nullable @Schema(description = "状态") String status,
+        @Nullable @Schema(description = "关键字") String keyword,
+        @Min(1) @Schema(description = "页码", defaultValue = "1")
+        long current,
+        @Min(1) @Max(200) @Schema(description = "每页大小", defaultValue = "20")
+        long size
+) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    public Query{{ entity }}Request {
+        if (current < 1) current = 1;
+        if (size < 1 || size > 200) size = 20;
+    }
+}

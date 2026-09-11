@@ -1,0 +1,123 @@
+package {{ base_package }}.{{ prefix }}.domain.model;
+
+import {{ base_package }}.{{ prefix }}.domain.command.Create{{ entity }}Command;
+import {{ base_package }}.{{ prefix }}.domain.command.Update{{ entity }}Command;
+import {{ base_package }}.{{ prefix }}.domain.event.{{ entity }}CreatedEvent;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * {{ description }}聚合根
+ *
+ * 设计要点：
+ * 1. 私有构造 + 工厂方法创建，保证不变量
+ * 2. 状态变更必须通过行为方法，内部做状态机校验
+ * 3. 领域事件先暂存聚合内，由仓储实现落库时取出（配合 Outbox）
+ */
+public class {{ entity }} {
+
+    private String id;
+{% for f in fields %}
+    private {{ f.java }} {{ f.name }};
+{% endfor %}
+    private {{ entity }}Status status;
+    private long version;
+    private OffsetDateTime createTime;
+    private OffsetDateTime updateTime;
+
+    /** 未发布的领域事件（随聚合持久化流程由 RepositoryImpl 写入 Outbox） */
+    private final List<Object> domainEvents = new ArrayList<>();
+
+    private {{ entity }}() {
+    }
+
+    /** 工厂方法：创建聚合的唯一入口 */
+    public static {{ entity }} create(Create{{ entity }}Command command) {
+        {{ entity }} entity = new {{ entity }}();
+        entity.id = command.id();
+{% for f in fields %}
+        entity.{{ f.name }} = command.{{ f.name }}();
+{% endfor %}
+        entity.status = {{ entity }}Status.{{ statuses[0] }};
+        entity.createTime = OffsetDateTime.now();
+        entity.registerEvent(new {{ entity }}CreatedEvent(entity.id, OffsetDateTime.now()));
+        return entity;
+    }
+
+    // ========== 行为方法（业务规则内聚于此） ==========
+
+    public void update(Update{{ entity }}Command command) {
+{% for f in fields if f.name != 'password' %}
+        if (command.{{ f.name }}() != null) {
+            this.{{ f.name }} = command.{{ f.name }}();
+        }
+{% endfor %}
+        this.updateTime = OffsetDateTime.now();
+    }
+
+    public void transitionTo({{ entity }}Status target) {
+        this.status.validateTransition(target);
+        this.status = target;
+        this.updateTime = OffsetDateTime.now();
+    }
+
+    // ========== 领域事件 ==========
+
+    protected void registerEvent(Object event) {
+        this.domainEvents.add(event);
+    }
+
+    public List<Object> pullDomainEvents() {
+        List<Object> events = List.copyOf(this.domainEvents);
+        this.domainEvents.clear();
+        return events;
+    }
+
+    // ========== getter（不提供 setter，状态变更走行为方法） ==========
+
+    public String getId() {
+        return id;
+    }
+
+{% for f in fields %}
+    public {{ f.java }} get{{ f.getter }}() {
+        return {{ f.name }};
+    }
+
+{% endfor %}
+    public {{ entity }}Status getStatus() {
+        return status;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public OffsetDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public OffsetDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    /** 仅 RepositoryImpl 重建聚合时使用（从 PO 还原全部字段） */
+    public static {{ entity }} restore(String id{% for f in fields %}, {{ f.java }} {{ f.name }}{% endfor %},
+                                       {{ entity }}Status status, long version,
+                                       OffsetDateTime createTime, OffsetDateTime updateTime) {
+        {{ entity }} entity = new {{ entity }}();
+        entity.id = id;
+{% for f in fields %}
+        entity.{{ f.name }} = {{ f.name }};
+{% endfor %}
+        entity.status = status;
+        entity.version = version;
+        entity.createTime = createTime;
+        entity.updateTime = updateTime;
+        return entity;
+    }
+}

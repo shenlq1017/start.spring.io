@@ -1,0 +1,42 @@
+package {{ base_package }}.{{ prefix }}.contract.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.jspecify.annotations.Nullable;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 创建{{ description }}请求
+ */
+@Schema(description = "创建{{ description }}请求")
+public record Create{{ entity }}Request(
+{% for f in fields %}
+{% if f.required %}
+{% if f.java == 'String' %}
+        @NotBlank(message = "{{ f.comment }}不能为空")
+        @Size(max = {{ f.max }})
+        @Schema(description = "{{ f.comment }}", requiredMode = Schema.RequiredMode.REQUIRED)
+        String {{ f.name }}{{ "," if not loop.last }}
+{% else %}
+        @NotNull(message = "{{ f.comment }}不能为空")
+        @Schema(description = "{{ f.comment }}", requiredMode = Schema.RequiredMode.REQUIRED)
+        {{ f.java }} {{ f.name }}{{ "," if not loop.last }}
+{% endif %}
+{% else %}
+        @Nullable
+{% if f.java == 'String' %}
+        @Size(max = {{ f.max }})
+{% endif %}
+        @Schema(description = "{{ f.comment }}")
+        {{ f.java }} {{ f.name }}{{ "," if not loop.last }}
+{% endif %}
+{% endfor %}
+) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+}

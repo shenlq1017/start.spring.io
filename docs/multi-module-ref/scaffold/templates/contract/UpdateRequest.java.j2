@@ -1,0 +1,27 @@
+package {{ base_package }}.{{ prefix }}.contract.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
+import org.jspecify.annotations.Nullable;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 更新{{ description }}请求（字段均为可选，仅更新非空字段）
+ */
+@Schema(description = "更新{{ description }}请求")
+public record Update{{ entity }}Request(
+{% for f in fields if f.name != 'password' %}
+        @Nullable
+{% if f.java == 'String' %}
+        @Size(max = {{ f.max }})
+{% endif %}
+        @Schema(description = "{{ f.comment }}")
+        {{ f.java }} {{ f.name }}{{ "," if not loop.last }}
+{% endfor %}
+) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+}

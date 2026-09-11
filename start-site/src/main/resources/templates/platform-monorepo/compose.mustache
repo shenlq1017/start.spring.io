@@ -1,0 +1,25 @@
+# Local infrastructure stubs for {{artifactId}}
+# Uncomment / adjust images as needed for your environment.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  nacos:
+    image: nacos/nacos-server:v3.1.1
+    environment:
+      MODE: standalone
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+# volumes:
+#   pgdata:

@@ -184,6 +184,13 @@ initializr:
             version: 25.1.11
           - compatibilityRange: "[4.1.0,4.2.0-M1)"
             version: 25.2.6
+      mybatis-plus:
+        groupId: com.baomidou
+        artifactId: mybatis-plus-bom
+        versionProperty: mybatis-plus.version
+        mappings:
+          - compatibilityRange: "[4.0.0,4.3.0-M1)"
+            version: 3.5.17
     platform:
       compatibilityRange: "4.0.0"
     repositories:
@@ -191,6 +198,22 @@ initializr:
         name: Shibboleth Releases Repository
         url: "https://build.shibboleth.net/maven/releases"
   dependencies:
+    - name: Project Structure
+      content:
+        - name: DDD Six-Module Microservice
+          id: ddd-six-module
+          groupId: org.springframework.boot
+          artifactId: spring-boot
+          description: Generate a Maven multi-module DDD skeleton (contract, feign-client, domain, infrastructure, application, bootstrap). Marker dependency removed from POM; Maven only.
+          starter: false
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+        - name: Platform Monorepo
+          id: platform-monorepo
+          groupId: org.springframework.boot
+          artifactId: spring-boot
+          description: Generate a Maven platform Monorepo skeleton (common, starters, services, gateway, deploy). Prefer over ddd-six-module when both selected. Marker removed from POM; Maven only.
+          starter: false
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
     - name: Developer Tools
       content:
         - name: GraalVM Native Support
@@ -223,6 +246,21 @@ initializr:
           scope: annotationProcessor
           description: Java annotation library which helps to reduce boilerplate code.
           starter: false
+        - name: MapStruct
+          id: mapstruct
+          groupId: org.mapstruct
+          artifactId: mapstruct
+          description: Annotation processor for generating type-safe bean mappers (对象映射代码生成). Also adds mapstruct-processor via customizer.
+          starter: false
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          mappings:
+            - compatibilityRange: "[4.0.0,4.3.0-M1)"
+              version: 1.6.3
+          links:
+            - rel: reference
+              href: https://mapstruct.org/
+            - rel: guide
+              href: https://mapstruct.org/documentation/stable/reference/html/
         - name: Spring Configuration Processor
           id: configuration-processor
           groupId: org.springframework.boot
@@ -472,6 +510,21 @@ initializr:
               href: https://springdoc.org/
             - rel: guide
               href: https://github.com/springdoc/springdoc-openapi-demos/
+        - name: Knife4j
+          id: knife4j
+          groupId: com.baizhukui
+          artifactId: knife4j-openapi3-boot4-spring-boot-starter
+          description: Enhanced OpenAPI 3 UI for Spring Boot 4 (增强版 springdoc / Swagger UI，访问 /doc.html). Prefer over plain springdoc when both are considered.
+          starter: true
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          mappings:
+            - compatibilityRange: "[4.0.0,4.3.0-M1)"
+              version: 5.6.0
+          links:
+            - rel: reference
+              href: https://knife4jnext.com/
+            - rel: guide
+              href: https://github.com/songxychn/knife4j-next
     - name: Template Engines
       content:
         - name: Thymeleaf
@@ -611,6 +664,21 @@ initializr:
             - rel: reference
               href: https://github.com/okta/okta-spring-boot#readme
               description: Okta Spring Boot documentation
+        - name: Sa-Token
+          id: sa-token
+          groupId: cn.dev33
+          artifactId: sa-token-spring-boot4-starter
+          description: Lightweight Java auth framework popular in China (登录认证 / 权限校验 / SSO). Boot 4 starter; pin conservatively if upgrading Boot mid-cycle.
+          starter: true
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          mappings:
+            - compatibilityRange: "[4.0.0,4.3.0-M1)"
+              version: 1.46.0
+          links:
+            - rel: reference
+              href: https://sa-token.cc/
+            - rel: guide
+              href: https://github.com/dromara/Sa-Token
     - name: SQL
       content:
         - name: JDBC API
@@ -690,6 +758,20 @@ initializr:
               description: MyBatis Quick Start
             - rel: reference
               href: https://mybatis.org/spring-boot-starter/mybatis-spring-boot-autoconfigure/
+        - name: MyBatis-Plus
+          id: mybatis-plus
+          groupId: com.baomidou
+          artifactId: mybatis-plus-spring-boot4-starter
+          bom: mybatis-plus
+          description: Enhanced MyBatis toolkit (增强版 MyBatis，CRUD/条件构造器/分页). Can be selected independently; if both mybatis and mybatis-plus are selected, the customizer removes classic mybatis.
+          starter: true
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          links:
+            - rel: guide
+              href: https://baomidou.com/getting-started/
+              description: MyBatis-Plus Quick Start
+            - rel: reference
+              href: https://baomidou.com/
         - name: Liquibase Migration
           id: liquibase
           description: Liquibase database migration and source control library.
@@ -786,6 +868,38 @@ initializr:
           artifactId: sqlite-jdbc
           scope: runtime
           starter: false
+    - name: China Ecosystem
+      content:
+        - name: Hutool
+          id: hutool
+          groupId: cn.hutool
+          artifactId: hutool-all
+          description: Java utility library popular in China (常用工具集：日期/加密/HTTP/IO 等).
+          starter: false
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          mappings:
+            - compatibilityRange: "[4.0.0,4.3.0-M1)"
+              version: 5.8.47
+          links:
+            - rel: reference
+              href: https://hutool.cn/
+            - rel: guide
+              href: https://github.com/chinabugotech/hutool
+        - name: EasyExcel
+          id: easyexcel
+          groupId: com.alibaba
+          artifactId: easyexcel
+          description: Alibaba Excel read/write library optimized for large files (Excel 导入导出).
+          starter: false
+          compatibilityRange: "[4.0.0,4.3.0-M1)"
+          mappings:
+            - compatibilityRange: "[4.0.0,4.3.0-M1)"
+              version: 4.0.3
+          links:
+            - rel: reference
+              href: https://easyexcel.opensource.alibaba.com/
+            - rel: guide
+              href: https://github.com/alibaba/easyexcel
     - name: NoSQL
       content:
         - name: Spring Data Redis (Access+Driver)

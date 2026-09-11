@@ -1,0 +1,30 @@
+-- {{ description }}表
+CREATE TABLE {{ table }} (
+    id           VARCHAR(64)  PRIMARY KEY,
+{% for f in fields %}
+    {{ f.col.ljust(13) }} {{ f.sql }} {% if f.required %}NOT NULL{% endif %},
+{% endfor %}
+    status       VARCHAR(32)  NOT NULL,
+    version      INT          NOT NULL DEFAULT 0,
+    deleted      BOOLEAN      NOT NULL DEFAULT FALSE,
+    create_by    VARCHAR(64),
+    create_time  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    update_by    VARCHAR(64),
+    update_time  TIMESTAMPTZ
+);
+
+{% for f in fields if f.get('unique') %}
+CREATE UNIQUE INDEX uk_{{ table }}_{{ f.col }} ON {{ table }} ({{ f.col }});
+{% endfor %}
+CREATE INDEX idx_{{ table }}_status ON {{ table }} (status);
+
+COMMENT ON TABLE  {{ table }}               IS '{{ description }}表';
+COMMENT ON COLUMN {{ table }}.id            IS '主键（Snowflake）';
+{% for f in fields %}
+COMMENT ON COLUMN {{ table }}.{{ f.col.ljust(13) }} IS '{{ f.comment }}';
+{% endfor %}
+COMMENT ON COLUMN {{ table }}.status        IS '状态';
+COMMENT ON COLUMN {{ table }}.version       IS '乐观锁版本号';
+COMMENT ON COLUMN {{ table }}.deleted       IS '删除标记';
+COMMENT ON COLUMN {{ table }}.create_time   IS '创建时间';
+COMMENT ON COLUMN {{ table }}.update_time   IS '更新时间';

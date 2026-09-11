@@ -1,0 +1,12 @@
+package {{ base_package }}.{{ prefix }}.infrastructure.persistence.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.entity.{{ entity }}PO;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * {{ description }} Mapper（写侧）：单表条件/分页/COUNT 在 RepositoryImpl 用 lambdaQuery，此处保持干净
+ */
+@Mapper
+public interface {{ entity }}Mapper extends BaseMapper<{{ entity }}PO> {
+}

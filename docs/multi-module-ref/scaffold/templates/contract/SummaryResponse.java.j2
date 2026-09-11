@@ -1,0 +1,25 @@
+package {{ base_package }}.{{ prefix }}.contract.dto.response;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.jspecify.annotations.Nullable;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+/**
+ * {{ description }}摘要响应（列表展示用）
+ */
+@Schema(description = "{{ description }}摘要响应")
+public record {{ entity }}SummaryResponse(
+        @Nullable @Schema(description = "ID") String id,
+{% for f in fields if f.name != 'password' %}
+        @Nullable @Schema(description = "{{ f.comment }}") {{ f.java }} {{ f.name }},
+{% endfor %}
+        @Nullable @Schema(description = "状态") String status,
+        @Nullable @Schema(description = "创建时间") OffsetDateTime createTime
+) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+}

@@ -1,0 +1,66 @@
+@use 'variables' as *;
+
+// CSS custom properties from MASTER.md — usable from any SCSS/CSS
+:root {
+  --color-primary: #{$color-primary};
+  --color-on-primary: #{$color-on-primary};
+  --color-secondary: #{$color-secondary};
+  --color-on-secondary: #{$color-on-secondary};
+  --color-accent: #{$color-accent};
+  --color-on-accent: #{$color-on-accent};
+  --color-background: #{$light-background};
+  --color-foreground: #{$light-color};
+  --color-card: #{$light-card};
+  --color-card-foreground: #{$light-color};
+  --color-muted: #{$light-muted};
+  --color-muted-foreground: #{$light-muted-foreground};
+  --color-border: #{$light-border};
+  --color-destructive: #{$color-destructive};
+  --color-on-destructive: #{$color-on-destructive};
+  --color-ring: #{$light-outline};
+
+  --space-xs: #{$space-xs};
+  --space-sm: #{$space-sm};
+  --space-md: #{$space-md};
+  --space-lg: #{$space-lg};
+  --space-xl: #{$space-xl};
+  --space-2xl: #{$space-2xl};
+  --space-3xl: #{$space-3xl};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+
+  --radius: #{$spring-radius};
+  --radius-lg: #{$spring-radius-lg};
+  --radius-xl: #{$spring-radius-xl};
+  --font-body: #{$spring-font-family};
+  --font-heading: #{$spring-font-family-heading};
+  --transition: #{$spring-transition-duration};
+}
+
+body.dark {
+  --color-background: #{$dark-background};
+  --color-foreground: #{$dark-color};
+  --color-card: #{$dark-card};
+  --color-card-foreground: #{$dark-color};
+  --color-muted: #{$dark-muted};
+  --color-muted-foreground: #{$dark-muted-foreground};
+  --color-border: #{$dark-border};
+  --color-ring: #{$color-ring};
+  --color-primary: #{$color-primary};
+  --color-accent: #{$dark-primary};
+  --color-on-accent: #{$dark-on-accent};
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

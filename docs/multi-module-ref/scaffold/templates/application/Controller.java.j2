@@ -1,0 +1,73 @@
+package {{ base_package }}.{{ prefix }}.controller;
+
+import com.enterprise.common.core.page.PageResult;
+import {{ base_package }}.{{ prefix }}.assembler.{{ entity }}Assembler;
+import {{ base_package }}.{{ prefix }}.contract.constant.{{ entity }}ApiPath;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Create{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Query{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Update{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}SummaryResponse;
+import {{ base_package }}.{{ prefix }}.service.{{ entity }}ApplicationService;
+import {{ base_package }}.{{ prefix }}.service.{{ entity }}QueryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * {{ description }}接口
+ */
+@Tag(name = "{{ description }}管理")
+@RestController
+@RequestMapping({{ entity }}ApiPath.BASE)
+@RequiredArgsConstructor
+public class {{ entity }}Controller {
+
+    private final {{ entity }}ApplicationService {{ entity_lower }}ApplicationService;
+    private final {{ entity }}QueryService {{ entity_lower }}QueryService;
+
+    @Operation(summary = "分页查询{{ description }}")
+    @GetMapping
+    public PageResult<{{ entity }}SummaryResponse> page(@Validated Query{{ entity }}Request query) {
+        return {{ entity_lower }}QueryService.page(query);
+    }
+
+    @Operation(summary = "获取{{ description }}详情")
+    @GetMapping("/{id}")
+    public {{ entity }}DetailResponse detail(@Parameter(description = "ID") @PathVariable String id) {
+        return {{ entity_lower }}QueryService.detail(id);
+    }
+
+    @Operation(summary = "创建{{ description }}")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public {{ entity }}DetailResponse create(@RequestBody @Validated Create{{ entity }}Request request) {
+        return {{ entity_lower }}ApplicationService.create(request);
+    }
+
+    @Operation(summary = "更新{{ description }}")
+    @PutMapping("/{id}")
+    public {{ entity }}DetailResponse update(@Parameter(description = "ID") @PathVariable String id,
+                                             @RequestBody @Validated Update{{ entity }}Request request) {
+        return {{ entity_lower }}ApplicationService.update(id, request);
+    }
+
+    @Operation(summary = "删除{{ description }}")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@Parameter(description = "ID") @PathVariable String id) {
+        {{ entity_lower }}ApplicationService.delete(id);
+    }
+}

@@ -1,0 +1,46 @@
+package {{ base_package }}.{{ prefix }}.assembler;
+
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Create{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Update{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import {{ base_package }}.{{ prefix }}.domain.command.Create{{ entity }}Command;
+import {{ base_package }}.{{ prefix }}.domain.command.Update{{ entity }}Command;
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }};
+import org.springframework.stereotype.Component;
+
+/**
+ * {{ description }}装配器：contract DTO <-> domain 类型
+ */
+@Component
+public class {{ entity }}Assembler {
+
+    public Create{{ entity }}Command toCreateCommand(Create{{ entity }}Request request, String id) {
+        return new Create{{ entity }}Command(
+                id,
+{% for f in fields %}
+                request.{{ f.name }}(){{ "," if not loop.last }}
+{% endfor %}
+        );
+    }
+
+    public Update{{ entity }}Command toUpdateCommand(Update{{ entity }}Request request) {
+        return new Update{{ entity }}Command(
+{% for f in fields if f.name != 'password' %}
+                request.{{ f.name }}(){{ "," if not loop.last }}
+{% endfor %}
+        );
+    }
+
+    public {{ entity }}DetailResponse toDetailResponse({{ entity }} entity) {
+        return new {{ entity }}DetailResponse(
+                true,
+                entity.getId(),
+{% for f in fields if f.name != 'password' %}
+                entity.get{{ f.getter }}(),
+{% endfor %}
+                entity.getStatus().name(),
+                entity.getCreateTime(),
+                entity.getUpdateTime()
+        );
+    }
+}

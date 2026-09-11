@@ -1,0 +1,27 @@
+package {{ base_package }}.{{ prefix }}.domain.model;
+
+import {{ base_package }}.{{ prefix }}.domain.exception.{{ entity }}StatusException;
+
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * {{ description }}状态机：所有状态流转必须经过 validateTransition
+ */
+public enum {{ entity }}Status {
+{% for s in statuses %}
+    {{ s }}{{ "," if not loop.last }}{{ ";" if loop.last }}
+{% endfor %}
+
+    private static final Map<{{ entity }}Status, Set<{{ entity }}Status>> TRANSITIONS = Map.of(
+{% for s, targets in transitions.items() %}
+        {{ s }}, Set.of({{ targets|join(', ') }}){{ "," if not loop.last }}
+{% endfor %}
+    );
+
+    public void validateTransition({{ entity }}Status target) {
+        if (!TRANSITIONS.getOrDefault(this, Set.of()).contains(target)) {
+            throw new {{ entity }}StatusException(this, target);
+        }
+    }
+}

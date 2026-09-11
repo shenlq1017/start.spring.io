@@ -1,0 +1,39 @@
+package {{ base_package }}.{{ prefix }}.infrastructure.persistence.converter;
+
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }};
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }}Status;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.entity.{{ entity }}PO;
+import org.springframework.stereotype.Component;
+
+/**
+ * PO <-> Domain 转换器（手工逐字段映射，禁止 BeanUtil.copyProperties 跨层拷贝；可等价替换为 MapStruct）
+ */
+@Component
+public class {{ entity }}Converter {
+
+    public {{ entity }}PO toPO({{ entity }} entity) {
+        {{ entity }}PO po = new {{ entity }}PO();
+        po.setId(entity.getId());
+{% for f in fields %}
+        po.set{{ f.getter }}(entity.get{{ f.getter }}());
+{% endfor %}
+        po.setStatus(entity.getStatus().name());
+        po.setVersion(entity.getVersion() == 0L ? null : entity.getVersion());
+        po.setCreateTime(entity.getCreateTime());
+        po.setUpdateTime(entity.getUpdateTime());
+        return po;
+    }
+
+    public {{ entity }} toDomain({{ entity }}PO po) {
+        return {{ entity }}.restore(
+                po.getId(),
+{% for f in fields %}
+                po.get{{ f.getter }}(),
+{% endfor %}
+                {{ entity }}Status.valueOf(po.getStatus()),
+                po.getVersion() == null ? 0L : po.getVersion(),
+                po.getCreateTime(),
+                po.getUpdateTime()
+        );
+    }
+}

@@ -1,0 +1,29 @@
+package {{ base_package }}.{{ prefix }};
+
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchRule;
+
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
+/**
+ * 架构红线校验：依赖方向 + 虚拟线程安全
+ */
+@AnalyzeClasses(packages = "{{ base_package }}.{{ prefix }}")
+class ModuleDependencyTest {
+
+    @ArchTest
+    static final ArchRule domain_must_not_depend_on_frameworks = noClasses()
+            .that().resideInAPackage("..domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.springframework..", "com.baomidou..", "tools.jackson..", "com.fasterxml..");
+
+    @ArchTest
+    static final ArchRule contract_must_not_depend_on_spring = noClasses()
+            .that().resideInAPackage("..contract..")
+            .should().dependOnClassesThat().resideInAPackage("org.springframework..");
+
+    @ArchTest
+    static final ArchRule no_synchronized_in_virtual_thread_code = noClasses()
+            .should().useSynchronization();
+}

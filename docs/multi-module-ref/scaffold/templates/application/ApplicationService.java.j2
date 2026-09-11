@@ -1,0 +1,50 @@
+package {{ base_package }}.{{ prefix }}.service;
+
+import com.enterprise.common.core.id.SnowflakeIdGenerator;
+import {{ base_package }}.{{ prefix }}.assembler.{{ entity }}Assembler;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Create{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Update{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import {{ base_package }}.{{ prefix }}.domain.exception.{{ entity }}NotFoundException;
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }};
+import {{ base_package }}.{{ prefix }}.domain.repository.{{ entity }}Repository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * {{ description }}应用服务（写侧）：编排领域行为，业务规则在聚合内
+ */
+@Service
+@RequiredArgsConstructor
+public class {{ entity }}ApplicationService {
+
+    private final {{ entity }}Repository {{ entity_lower }}Repository;
+    private final {{ entity }}Assembler {{ entity_lower }}Assembler;
+    private final SnowflakeIdGenerator idGenerator;
+
+    @Transactional(rollbackFor = Exception.class)
+    public {{ entity }}DetailResponse create(Create{{ entity }}Request request) {
+        String id = idGenerator.nextId();
+        {{ entity }} entity = {{ entity }}.create({{ entity_lower }}Assembler.toCreateCommand(request, id));
+        {{ entity }} saved = {{ entity_lower }}Repository.save(entity);
+        // 领域事件由 RepositoryImpl 在同一事务写入 Outbox，无需在此显式发布
+        return {{ entity_lower }}Assembler.toDetailResponse(saved);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public {{ entity }}DetailResponse update(String id, Update{{ entity }}Request request) {
+        {{ entity }} entity = {{ entity_lower }}Repository.findById(id)
+                .orElseThrow(() -> new {{ entity }}NotFoundException(id));
+        entity.update({{ entity_lower }}Assembler.toUpdateCommand(request));
+        {{ entity_lower }}Repository.save(entity);
+        return {{ entity_lower }}Assembler.toDetailResponse(entity);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String id) {
+        {{ entity }} entity = {{ entity_lower }}Repository.findById(id)
+                .orElseThrow(() -> new {{ entity }}NotFoundException(id));
+        {{ entity_lower }}Repository.deleteById(id);
+    }
+}

@@ -1,0 +1,15 @@
+package {{ base_package }}.{{ prefix }}.domain.command;
+
+import java.math.BigDecimal;
+
+import org.jspecify.annotations.Nullable;
+
+/**
+ * 更新{{ description }}命令（字段均为可选，null 表示不更新）
+ */
+public record Update{{ entity }}Command(
+{% for f in fields if f.name != 'password' %}
+        @Nullable {{ f.java }} {{ f.name }}{{ "," if not loop.last }}
+{% endfor %}
+) {
+}

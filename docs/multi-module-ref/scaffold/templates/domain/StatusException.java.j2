@@ -1,0 +1,26 @@
+package {{ base_package }}.{{ prefix }}.domain.exception;
+
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }}Status;
+
+/**
+ * {{ description }}状态流转非法
+ */
+public class {{ entity }}StatusException extends RuntimeException {
+
+    private final {{ entity }}Status currentStatus;
+    private final {{ entity }}Status targetStatus;
+
+    public {{ entity }}StatusException({{ entity }}Status current, {{ entity }}Status target) {
+        super("状态不允许流转: " + current + " -> " + target);
+        this.currentStatus = current;
+        this.targetStatus = target;
+    }
+
+    public {{ entity }}Status getCurrentStatus() {
+        return currentStatus;
+    }
+
+    public {{ entity }}Status getTargetStatus() {
+        return targetStatus;
+    }
+}

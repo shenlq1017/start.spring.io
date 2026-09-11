@@ -1,0 +1,21 @@
+package {{packageName}};
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * {{svc}} bootstrap entry point.
+ * <p>
+ * scanBasePackages stays on this service package; shared platform starters (Phase B)
+ * should register via {@code AutoConfiguration.imports}, not component scan.
+ */
+@SpringBootApplication(scanBasePackages = "{{packageName}}")
+@MapperScan("{{packageName}}.infrastructure.persistence.mapper")
+public class {{applicationName}} {
+
+	public static void main(String[] args) {
+		SpringApplication.run({{applicationName}}.class, args);
+	}
+
+}

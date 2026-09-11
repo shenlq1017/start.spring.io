@@ -1,0 +1,12 @@
+package {{ base_package }}.{{ prefix }}.contract.constant;
+
+/**
+ * {{ description }} API 路径常量（Controller 与 Feign 共用，保证契约一致）
+ */
+public final class {{ entity }}ApiPath {
+
+    private {{ entity }}ApiPath() {}
+
+    /** 路径前缀，如 /{{ prefix }}/v1/{{ resource }} */
+    public static final String BASE = "/{{ prefix }}/v1/{{ resource }}";
+}

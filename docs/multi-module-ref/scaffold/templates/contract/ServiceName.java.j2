@@ -1,0 +1,12 @@
+package {{ base_package }}.{{ prefix }}.contract.constant;
+
+/**
+ * {{ description }}服务名常量
+ */
+public final class {{ entity }}ServiceName {
+
+    private {{ entity }}ServiceName() {}
+
+    /** Nacos 注册服务名，Feign name 引用此常量 */
+    public static final String NAME = "{{ svc }}";
+}

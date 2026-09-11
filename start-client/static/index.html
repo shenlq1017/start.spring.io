@@ -68,6 +68,12 @@
     />
     <meta property="og:image:width" content="1000" />
     <meta property="og:image:height" content="523" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <meta name="theme-color" content="<%= htmlWebpackPlugin.options.theme %>" />
 
     <style>
@@ -222,10 +228,17 @@
         display: none;
       }
       html {
-        font-family: sans-serif;
+        font-family: 'IBM Plex Sans', 'Metropolis', Arial, sans-serif;
       }
       body {
         margin: 0;
+        background-color: #0F172A;
+        color: #F8FAFC;
+      }
+      body.light,
+      html[data-theme='light'] body {
+        background-color: #ffffff;
+        color: #0F172A;
       }
       .noscript {
         padding: 2rem;
@@ -234,6 +247,22 @@
         color: #3d96f7;
       }
     </style>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('springtheme');
+          if (t !== 'light' && t !== 'dark') {
+            t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+              ? 'light'
+              : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.classList.add(t);
+          });
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="default">
     <noscript>

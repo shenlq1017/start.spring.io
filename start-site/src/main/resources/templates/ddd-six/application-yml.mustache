@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: {{svc}}
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://${PG_HOST:localhost:5432}/{{dbName}}
+    username: ${PG_USER:postgres}
+    password: ${PG_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 20
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  mvc:
+    problemdetails:
+      enabled: true
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+server:
+  port: 8080
+  shutdown: graceful

@@ -1,0 +1,17 @@
+package {{ base_package }}.common.core.exception;
+
+/**
+ * 业务异常基类：errorType 用于 Problem Detail 的 type URI，status 为 HTTP 状态码。
+ */
+public abstract class BusinessException extends RuntimeException {
+
+    protected BusinessException(String message) {
+        super(message);
+    }
+
+    /** 错误类型标识，拼接到 Problem Detail type URI，如 "user-not-found" */
+    public abstract String errorType();
+
+    /** HTTP 状态码 */
+    public abstract int status();
+}

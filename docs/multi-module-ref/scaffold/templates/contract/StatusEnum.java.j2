@@ -1,0 +1,23 @@
+package {{ base_package }}.{{ prefix }}.contract.enums;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/**
+ * {{ description }}状态枚举（契约侧，供请求/响应 DTO 使用）
+ */
+@Schema(description = "{{ description }}状态")
+public enum {{ entity }}StatusEnum {
+{% for s in statuses %}
+    {{ s }}("{{ status_desc[s] }}"){{ "," if not loop.last }}{{ ";" if loop.last }}
+{% endfor %}
+
+    private final String description;
+
+    {{ entity }}StatusEnum(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}

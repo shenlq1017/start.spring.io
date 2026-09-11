@@ -1,0 +1,16 @@
+package {{ base_package }}.{{ prefix }}.domain.command;
+
+import java.math.BigDecimal;
+
+import org.jspecify.annotations.Nullable;
+
+/**
+ * 创建{{ description }}命令（application 层由 Request DTO 转换而来，id 由 Snowflake 预生成）
+ */
+public record Create{{ entity }}Command(
+        String id,
+{% for f in fields %}
+        {{ '@Nullable ' if not f.required else '' }}{{ f.java }} {{ f.name }}{{ "," if not loop.last }}
+{% endfor %}
+) {
+}

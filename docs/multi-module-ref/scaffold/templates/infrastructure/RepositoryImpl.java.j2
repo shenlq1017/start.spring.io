@@ -1,0 +1,62 @@
+package {{ base_package }}.{{ prefix }}.infrastructure.persistence.repository;
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import {{ base_package }}.{{ prefix }}.domain.model.{{ entity }};
+import {{ base_package }}.{{ prefix }}.domain.query.{{ entity }}Query;
+import {{ base_package }}.{{ prefix }}.domain.repository.{{ entity }}Repository;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.converter.{{ entity }}Converter;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.entity.{{ entity }}PO;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.mapper.{{ entity }}Mapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * {{ description }}仓储实现：PO <-> Domain 经 Converter 互转，签名只暴露领域类型
+ */
+@Repository
+@RequiredArgsConstructor
+public class {{ entity }}RepositoryImpl implements {{ entity }}Repository {
+
+    private final {{ entity }}Mapper {{ entity_lower }}Mapper;
+    private final {{ entity }}Converter {{ entity_lower }}Converter;
+
+    @Override
+    public {{ entity }} save({{ entity }} entity) {
+        {{ entity }}PO po = {{ entity_lower }}Converter.toPO(entity);
+        if (po.getVersion() == null) {
+            po.setVersion(1L);   // 初始版本号（后续每次 updateById 由 @Version 自增）
+            {{ entity_lower }}Mapper.insert(po);
+        } else {
+            {{ entity_lower }}Mapper.updateById(po);   // @Version 乐观锁自动生效
+        }
+        // 领域事件与业务数据同事务写入 Outbox（此处由基础设施组件 OutboxEventWriter 完成，骨架省略）
+        entity.pullDomainEvents();
+        return {{ entity_lower }}Converter.toDomain(po);
+    }
+
+    @Override
+    public Optional<{{ entity }}> findById(String id) {
+        return Optional.ofNullable({{ entity_lower }}Mapper.selectById(id))
+                .map({{ entity_lower }}Converter::toDomain);
+    }
+
+    @Override
+    public List<{{ entity }}> findByQuery({{ entity }}Query query) {
+        return {{ entity_lower }}Mapper.selectList(Wrappers.<{{ entity }}PO>lambdaQuery()
+                        .eq(StringUtils.hasText(query.status()),
+                                {{ entity }}PO::getStatus, query.status())
+                        .orderByDesc({{ entity }}PO::getCreateTime))
+                .stream()
+                .map({{ entity_lower }}Converter::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteById(String id) {
+        {{ entity_lower }}Mapper.deleteById(id);   // @TableLogic 逻辑删除
+    }
+}

@@ -18,6 +18,7 @@ package io.spring.start.site.project;
 
 import io.spring.initializr.generator.project.ProjectDescriptionCustomizer;
 import io.spring.start.site.extension.dependency.jooq.JooqVersionProjectDescriptionCustomizer;
+import io.spring.start.site.extension.dependency.platformmono.PlatformMonorepoProjectDescriptionCustomizer;
 import io.spring.start.site.extension.dependency.timefold.TimefoldVersionProjectDescriptionCustomizer;
 import io.spring.start.site.extension.dependency.vaadin.VaadinVersionProjectDescriptionCustomizer;
 import io.spring.start.site.project.dependency.springcloud.SpringCloudResilience4JProjectDescriptionCustomizer;
@@ -56,6 +57,11 @@ public class ProjectDescriptionCustomizerConfiguration {
 	@Bean
 	TimefoldVersionProjectDescriptionCustomizer timefoldVersionProjectDescriptionCustomizer() {
 		return new TimefoldVersionProjectDescriptionCustomizer();
+	}
+
+	@Bean
+	public PlatformMonorepoProjectDescriptionCustomizer platformMonorepoProjectDescriptionCustomizer() {
+		return new PlatformMonorepoProjectDescriptionCustomizer();
 	}
 
 }

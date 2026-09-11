@@ -1,4 +1,5 @@
 @use 'variables';
+
 @mixin transition($args...) {
   & {
     -webkit-transition: $args;
@@ -15,7 +16,20 @@
   }
   &:focus {
     outline: 1px dotted variables.$light-outline;
-    // outline: none;
-    // box-shadow: 0 0 0 2px $light-border;
+  }
+  &:focus-visible {
+    outline: 2px solid variables.$light-primary;
+    outline-offset: 2px;
+  }
+}
+
+@mixin focus-ring($color: variables.$light-primary) {
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color, 0.35);
+  }
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: 2px;
   }
 }

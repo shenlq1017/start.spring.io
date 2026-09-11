@@ -1,0 +1,22 @@
+package {{ base_package }}.{{ prefix }}.feign;
+
+import {{ base_package }}.{{ prefix }}.contract.constant.{{ entity }}ApiPath;
+import {{ base_package }}.{{ prefix }}.contract.constant.{{ entity }}ServiceName;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+/**
+ * {{ description }} Feign 客户端（由服务提供方维护，调用方直接依赖本模块）
+ */
+@FeignClient(
+        name = {{ entity }}ServiceName.NAME,
+        path = {{ entity }}ApiPath.BASE,
+        fallbackFactory = {{ entity }}FeignFallbackFactory.class
+)
+public interface {{ entity }}FeignClient {
+
+    @GetMapping("/{id}")
+    {{ entity }}DetailResponse detail(@PathVariable("id") String id);
+}

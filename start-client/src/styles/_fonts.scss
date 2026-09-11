@@ -1,11 +1,16 @@
+// Body/heading families: IBM Plex Sans + JetBrains Mono loaded via
+// Google Fonts <link> in static/index.html (see MASTER.md).
+// Metropolis remains as offline fallback.
+
 @font-face {
   font-family: 'Metropolis';
   src: url('../fonts/metropolis-regular-webfont.eot?#iefix')
       format('embedded-opentype'),
     url('../fonts/metropolis-regular-webfont.woff2') format('woff2'),
     url('../fonts/metropolis-regular-webfont.woff') format('woff');
-  font-style: 400;
-  font-weight: normal;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Metropolis';
@@ -13,8 +18,9 @@
       format('embedded-opentype'),
     url('../fonts/metropolis-medium-webfont.woff2') format('woff2'),
     url('../fonts/metropolis-medium-webfont.woff') format('woff');
-  font-style: 400;
-  font-weight: normal;
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Metropolis';
@@ -24,6 +30,7 @@
     url('../fonts/metropolis-bold-webfont.woff') format('woff');
   font-weight: 600;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Metropolis';
@@ -33,6 +40,7 @@
     url('../fonts/metropolis-extrabold-webfont.woff') format('woff');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -43,6 +51,7 @@
     url('../fonts/metropolis-thin-webfont.woff') format('woff');
   font-weight: 100;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -51,6 +60,7 @@
       format('embedded-opentype'),
     url('../fonts/metropolis-light-webfont.woff2') format('woff2'),
     url('../fonts/metropolis-light-webfont.woff') format('woff');
-  font-weight: 200;
+  font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }

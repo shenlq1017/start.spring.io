@@ -1,0 +1,21 @@
+package {{ base_package }}.{{ prefix }}.infrastructure.persistence.mapper;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import {{ base_package }}.{{ prefix }}.contract.dto.request.Query{{ entity }}Request;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
+import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}SummaryResponse;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * {{ description }}读侧 Mapper（CQRS 查询投影，直接出 DTO，不经过领域对象）
+ */
+@Mapper
+public interface {{ entity }}ReadMapper {
+
+    {{ entity }}DetailResponse selectDetailById(@Param("id") String id);
+
+    IPage<{{ entity }}SummaryResponse> selectSummaryPage(Page<?> page,
+                                                       @Param("query") Query{{ entity }}Request query);
+}

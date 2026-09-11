@@ -1,0 +1,10 @@
+package {{ base_package }}.{{ prefix }}.domain.event;
+
+import java.time.OffsetDateTime;
+
+/**
+ * {{ description }}已创建事件
+ * 经 Outbox 表落库后异步发布到 RocketMQ
+ */
+public record {{ entity }}CreatedEvent(String {{ entity_lower }}Id, OffsetDateTime occurredAt) {
+}

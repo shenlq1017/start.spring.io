@@ -1,0 +1,56 @@
+package {{ base_package }}.{{ prefix }}.infrastructure.persistence.entity;
+
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+/**
+ * {{ description }}持久化对象（与领域模型严格分离，经 {{ entity }}Converter 互转）
+ */
+@Data
+@TableName(value = "{{ table }}")
+public class {{ entity }}PO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /** 主键：Snowflake（应用层预生成） */
+    @TableId(type = IdType.ASSIGN_ID)
+    private String id;
+
+{% for f in fields %}
+    /** {{ f.comment }} */
+    private {{ f.java }} {{ f.name }};
+
+{% endfor %}
+    /** 状态 */
+    private String status;
+
+    /** 乐观锁 */
+    @Version
+    private Long version;
+
+    /** 逻辑删除标记 */
+    @TableLogic
+    private Boolean deleted;
+
+    private String createBy;
+
+    @TableField(fill = FieldFill.INSERT)
+    private OffsetDateTime createTime;
+
+    private String updateBy;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private OffsetDateTime updateTime;
+}

@@ -82,5 +82,9 @@
   {
     "id": "cloud-gateway-reactive",
     "weight": 60
+  },
+  {
+    "id": "ddd-six-module",
+    "weight": 40
   }
 ]

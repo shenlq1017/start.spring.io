@@ -1,31 +1,80 @@
 @use 'sass:color';
-// Theme Light
 
-$light-background: #fff;
-$light-background-seconday: #ecf2f2;
-$light-color: #000;
-$light-border: #dce8e8;
-$light-primary: #6db33f;
+// ---------------------------------------------------------------------------
+// Design system tokens (MASTER.md) — Dark Mode OLED first, green CTA
+// CSS custom properties are defined in :root / body.dark (see _tokens.scss)
+// ---------------------------------------------------------------------------
+
+// Theme Light (kept working via Theme.js toggle)
+$light-background: #ffffff;
+$light-background-seconday: #f1f5f9; // legacy typo kept for existing refs
+$light-background-secondary: #f1f5f9;
+$light-color: #0f172a;
+$light-border: #e2e8f0;
+$light-primary: #22c55e;
 $light-link: #086dc3;
-$light-placeholder: color.adjust($light-border, $lightness: 5%);
-$light-outline: color.adjust($light-border, $lightness: -15%);
+$light-placeholder: color.adjust($light-border, $lightness: 2%);
+$light-outline: color.adjust($light-border, $lightness: -20%);
+$light-card: #ffffff;
+$light-muted: #f1f5f9;
+$light-muted-foreground: #64748b;
 
-// Theme Dark
+// Theme Dark (OLED slate)
+$dark-background: #0f172a;
+$dark-background-secondary: #1b2336;
+$dark-color: #f8fafc;
+$dark-border: #475569;
+$dark-primary: #22c55e;
+$dark-link: #38bdf8;
+$dark-placeholder: #272f42;
+$dark-card: #1b2336;
+$dark-muted: #272f42;
+$dark-muted-foreground: #94a3b8;
+$dark-on-accent: #0f172a;
 
-$dark-background: #1b1f23;
-$dark-background-secondary: #262a2d;
-$dark-color: #fff;
-$dark-border: #4a5053;
-$dark-primary: #6db33f;
-$dark-link: #086dc3;
-$dark-placeholder: #262a2d;
+// Semantic / MASTER.md aliases
+$color-primary: #1e293b;
+$color-on-primary: #ffffff;
+$color-secondary: #334155;
+$color-on-secondary: #ffffff;
+$color-accent: #22c55e;
+$color-on-accent: #0f172a;
+$color-background: #0f172a;
+$color-foreground: #f8fafc;
+$color-card: #1b2336;
+$color-card-foreground: #f8fafc;
+$color-muted: #272f42;
+$color-muted-foreground: #94a3b8;
+$color-border: #475569;
+$color-destructive: #ef4444;
+$color-on-destructive: #000000;
+$color-ring: #ffffff;
 
-// Global
-
+// Global typography & layout
 $spring-8points: 8px;
 $spring-font-size: 15px;
 $spring-font-size-sm: 14px;
-$spring-font-family: 'Metropolis', Arial, sans-serif;
-$spring-radius: 4px;
-$spring-transition-duration: 0.15s;
+$spring-font-family: 'IBM Plex Sans', 'Metropolis', Arial, sans-serif;
+$spring-font-family-heading: 'JetBrains Mono', 'IBM Plex Sans', monospace;
+$spring-radius: 8px;
+$spring-radius-lg: 12px;
+$spring-radius-xl: 16px;
+$spring-transition-duration: 0.2s;
+$spring-transition-fast: 0.15s;
+$spring-transition-slow: 0.3s;
 $spring-max-width: 1680px;
+
+// Spacing (MASTER.md)
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 32px;
+$space-2xl: 48px;
+$space-3xl: 64px;
+
+// Shadows
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);

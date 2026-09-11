@@ -1,0 +1,18 @@
+package {{ base_package }}.{{ prefix }}.domain.exception;
+
+/**
+ * {{ description }}不存在
+ */
+public class {{ entity }}NotFoundException extends RuntimeException {
+
+    private final String {{ entity_lower }}Id;
+
+    public {{ entity }}NotFoundException(String {{ entity_lower }}Id) {
+        super("未找到{{ description }}: " + {{ entity_lower }}Id);
+        this.{{ entity_lower }}Id = {{ entity_lower }}Id;
+    }
+
+    public String get{{ entity }}Id() {
+        return {{ entity_lower }}Id;
+    }
+}

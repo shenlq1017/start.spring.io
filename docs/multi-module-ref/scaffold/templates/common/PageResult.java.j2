@@ -1,0 +1,13 @@
+package {{ base_package }}.common.core.page;
+
+import java.util.List;
+
+/**
+ * 分页结果（common-core 提供，Controller 分页接口统一返回它，禁止暴露 MyBatis-Plus IPage）。
+ */
+public record PageResult<T>(List<T> records, long total, long current, long size) {
+
+    public static <T> PageResult<T> of(List<T> records, long total, long current, long size) {
+        return new PageResult<>(records, total, current, size);
+    }
+}

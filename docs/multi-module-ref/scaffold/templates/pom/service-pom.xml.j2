@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.enterprise</groupId>
+        <artifactId>platform-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>{{ svc }}</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>{{ svc }}-contract</module>
+        <module>{{ svc }}-feign-client</module>
+        <module>{{ svc }}-domain</module>
+        <module>{{ svc }}-infrastructure</module>
+        <module>{{ svc }}-application</module>
+        <module>{{ svc }}-bootstrap</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-contract</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-feign-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.enterprise</groupId>
+                <artifactId>{{ svc }}-bootstrap</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

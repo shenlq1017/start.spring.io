@@ -17,7 +17,7 @@ export const defaultAppContext = {
   favoriteAdd: false,
   nav: false,
   list: false,
-  theme: 'light',
+  theme: 'dark',
   config: {},
   groupsClosed: [],
   dependencies: {

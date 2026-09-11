@@ -1,0 +1,29 @@
+package {{packageName}};
+
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchRule;
+
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
+/**
+ * Architecture guardrails for the six-module layout (skeleton stub).
+ */
+@AnalyzeClasses(packages = "{{packageName}}")
+class ModuleDependencyTest {
+
+	@ArchTest
+	static final ArchRule domainMustNotDependOnFrameworks = noClasses().that()
+		.resideInAPackage("..domain..")
+		.should()
+		.dependOnClassesThat()
+		.resideInAnyPackage("org.springframework..", "com.baomidou..", "tools.jackson..", "com.fasterxml..");
+
+	@ArchTest
+	static final ArchRule contractMustNotDependOnSpring = noClasses().that()
+		.resideInAPackage("..contract..")
+		.should()
+		.dependOnClassesThat()
+		.resideInAPackage("org.springframework..");
+
+}

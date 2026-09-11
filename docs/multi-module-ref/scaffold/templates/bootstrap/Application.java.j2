@@ -1,0 +1,21 @@
+package {{ base_package }}.{{ prefix }};
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * {{ description }}服务启动类
+ *
+ * 注意：
+ * 1. scanBasePackages 只扫本服务包；common 能力由 starter @AutoConfiguration 装配
+ * 2. @MapperScan 指向本服务 infrastructure 的 mapper 包
+ */
+@SpringBootApplication(scanBasePackages = "{{ base_package }}.{{ prefix }}")
+@MapperScan("{{ base_package }}.{{ prefix }}.infrastructure.persistence.mapper")
+public class {{ entity }}Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run({{ entity }}Application.class, args);
+    }
+}

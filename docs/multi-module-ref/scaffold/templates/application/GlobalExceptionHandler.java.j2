@@ -1,0 +1,43 @@
+package {{ base_package }}.{{ prefix }}.advice;
+
+import {{ base_package }}.{{ prefix }}.domain.exception.{{ entity }}NotFoundException;
+import {{ base_package }}.{{ prefix }}.domain.exception.{{ entity }}StatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.net.URI;
+import java.time.Instant;
+
+/**
+ * 全局异常处理：统一 Problem Details（RFC 7807），业务错误码用 type URI 承载
+ * 前置：application.yml 开启 spring.mvc.problemdetails.enabled: true
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final String ERROR_TYPE_BASE = "https://api.example.com/errors/";
+
+    @ExceptionHandler({{ entity }}NotFoundException.class)
+    public ProblemDetail handleNotFound({{ entity }}NotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setType(URI.create(ERROR_TYPE_BASE + "{{ prefix }}-not-found"));
+        detail.setTitle("{{ description }}不存在");
+        detail.setProperty("{{ entity_lower }}Id", ex.get{{ entity }}Id());
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
+
+    @ExceptionHandler({{ entity }}StatusException.class)
+    public ProblemDetail handleStatus({{ entity }}StatusException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        detail.setType(URI.create(ERROR_TYPE_BASE + "{{ prefix }}-status-conflict"));
+        detail.setTitle("{{ description }}状态异常");
+        detail.setProperty("currentStatus", ex.getCurrentStatus().name());
+        detail.setProperty("targetStatus", ex.getTargetStatus().name());
+        detail.setProperty("timestamp", Instant.now());
+        return detail;
+    }
+}
