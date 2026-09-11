@@ -149,7 +149,7 @@ body {
       flex: 96px 0;
       min-width: 88px;
       text-align: right;
-      color: #333;
+      color: $light-color;
     }
   }
 }
@@ -180,7 +180,7 @@ body {
   display: flex;
   align-items: center;
   label {
-    color: #333;
+    color: $light-color;
     font-weight: 500;
     flex: 110px 0;
     min-width: 110px;
@@ -215,7 +215,7 @@ body {
       text-align: right;
       font-size: 14px;
       font-weight: 500;
-      color: #333;
+      color: $light-color;
     }
     input,
     .group-radio {
@@ -395,14 +395,56 @@ ul.dependencies-list {
   flex-wrap: wrap;
   align-items: center;
   gap: $space-sm;
+  min-height: 2.6rem;
   .label {
     font-family: $spring-font-family-heading;
+    font-size: $spring-font-size + 1;
     font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
   }
   .button,
   .placeholder-button {
     float: none;
     margin-left: auto;
+  }
+}
+
+// P6 — Dependencies column density / empty state (keep Chinese deps + modal)
+.colset-main > .right {
+  .control {
+    padding-top: 0.15rem;
+  }
+  .no-dependency {
+    margin-top: 0.75rem;
+    padding: 1rem 0.85rem;
+    font-style: normal;
+    font-size: 14px;
+    line-height: 1.5;
+    color: $light-muted-foreground;
+    background: $light-muted;
+    border: 1px dashed $light-border;
+    border-radius: $spring-radius;
+  }
+  ul.dependencies-list {
+    margin-top: 0.35rem;
+    padding-bottom: 1rem;
+    li {
+      border-bottom-color: $light-border;
+      div {
+        padding: 0.75rem 0;
+        padding-right: 48px;
+        strong {
+          font-size: $spring-font-size;
+          letter-spacing: -0.01em;
+        }
+        span.description {
+          font-size: 13px;
+          line-height: 1.45;
+          color: $light-muted-foreground;
+        }
+      }
+    }
   }
 }
 
@@ -673,10 +715,32 @@ button.button.primary {
   }
 }
 
+// P6 — radio selection must not reflow row width (bold was shaking columns)
 .group-radio {
-  .radio.checked {
-    font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  .radio {
+    flex: 0 0 auto;
+    min-width: 4.5rem;
+    white-space: nowrap;
+    font-weight: 500; // same weight selected/unselected — no bold jitter
+    box-sizing: border-box;
+    &.checked {
+      font-weight: 500;
+    }
   }
+}
+
+// Longer Chinese labels (Architecture / Template / DB)
+.control-architecture .group-radio .radio,
+.control-template .group-radio .radio,
+.entities-editor .group-radio .radio {
+  min-width: 5.75rem;
+}
+
+.control-boot .group-radio .radio {
+  min-width: 5.25rem;
 }
 
 .control {
@@ -748,21 +812,21 @@ body.dark {
 .entity-chip-row {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 4px 0;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
   border-bottom: 1px solid $light-border;
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
   &:last-child {
     border-bottom: 0;
   }
 }
 
 .entity-chip {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
-  max-width: 28rem;
   text-align: left;
   background: transparent;
   border: 0;
@@ -778,6 +842,14 @@ body.dark {
   &:hover .entity-chip-name {
     color: $light-primary;
   }
+}
+
+.entity-chip-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .entity-summary-meta {
@@ -854,25 +926,34 @@ body.dark {
   }
 }
 
-.entity-add-btn {
+.entity-add-btn,
+.entity-open-editor-btn {
   display: inline-block;
   margin-top: 2px;
-  padding: 6px 10px;
+  padding: 0.45rem 0.9rem 0.4rem;
   font: inherit;
   font-size: 13px;
-  border: 1px dashed $light-border;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 2px solid $light-color; // match Explore / 添加依赖 frames
   border-radius: $spring-radius;
-  background: transparent;
+  background: $light-background;
   cursor: pointer;
-  color: inherit;
+  color: $light-color;
+  @include transition(
+    color $spring-transition-fast ease,
+    background-color $spring-transition-fast ease,
+    border-color $spring-transition-fast ease
+  );
   &:hover {
-    border-color: $light-primary;
-    color: $light-primary;
+    color: $light-background;
+    background: $light-color;
+    border-color: $light-color;
   }
-}
-
-.entity-open-editor-btn {
-  border-style: solid;
+  &:focus-visible {
+    outline: 2px solid $light-primary;
+    outline-offset: 2px;
+  }
 }
 
 // Hide home floaters while Entities editor is open (portal overlay)
@@ -997,7 +1078,7 @@ body.entities-editor-open {
         text-align: right;
         font-size: 14px;
         font-weight: 500;
-        color: #333;
+        color: $light-color;
       }
       input,
       .group-radio,
@@ -1093,7 +1174,7 @@ body.entities-editor-open {
     gap: 6px;
     font-size: 13px;
     white-space: nowrap;
-    color: #333;
+    color: $light-color;
     input[type='checkbox'] {
       margin: 0;
       width: 15px;
@@ -1109,14 +1190,14 @@ body.entities-editor-open {
     gap: 6px !important;
     margin-top: 2px;
     font-size: 13px;
-    color: #333;
+    color: $light-color;
   }
 
   .entity-section-label {
     margin: 14px 0 8px;
     font-size: 14px;
     font-weight: 600;
-    color: #333;
+    color: $light-color;
     opacity: 1;
   }
 
@@ -1133,9 +1214,11 @@ body.entities-editor-open {
 }
 
 body.dark {
+  // Labels — beat light-theme specificity (#333 / $light-color hardcodes)
   .control-inline label,
-  .control-metadata .control-inline label {
-    color: $dark-muted-foreground;
+  .control-metadata .control-inline label,
+  .colset-meta-row .control-inline label {
+    color: $dark-muted-foreground !important;
   }
 
   .entity-chip-row {
@@ -1147,6 +1230,12 @@ body.dark {
   .entity-link-btn {
     color: $dark-primary;
   }
+  .entity-remove.entity-link-btn {
+    color: $dark-muted-foreground;
+    &:hover {
+      color: #f87171;
+    }
+  }
   .entity-icon-btn {
     color: $dark-muted-foreground;
     &:hover,
@@ -1155,14 +1244,37 @@ body.dark {
       background: rgba(248, 113, 113, 0.12);
     }
   }
-  .entity-add-btn {
-    border-color: $dark-border;
+  .entity-add-btn,
+  .entity-open-editor-btn {
+    border-color: $dark-color;
+    background: $dark-background;
+    color: $dark-color;
     &:hover {
-      border-color: $dark-primary;
-      color: $dark-primary;
+      border-color: $dark-color;
+      background: $dark-color;
+      color: $dark-background;
     }
   }
+
+  .colset-main > .right {
+    .no-dependency {
+      color: $dark-muted-foreground;
+      background: $dark-muted;
+      border-color: $dark-border;
+    }
+    ul.dependencies-list li {
+      border-bottom-color: $dark-border;
+      div span.description {
+        color: $dark-muted-foreground;
+      }
+    }
+  }
+
+  .explorer.entities-editor,
   .entities-editor {
+    color: $dark-color;
+    background: $dark-background;
+
     .entity-tab:hover {
       background: rgba(255, 255, 255, 0.06);
     }
@@ -1176,21 +1288,38 @@ body.dark {
     .entity-editor-form .input {
       border-bottom-color: $dark-border;
       color: $dark-color;
+      background: transparent;
       &:focus {
         border-bottom-color: $dark-primary;
         box-shadow: 0 2px 0 0 rgba($dark-primary, 0.35);
       }
     }
+    .entity-select {
+      background-image: linear-gradient(45deg, transparent 50%, $dark-muted-foreground 50%),
+        linear-gradient(135deg, $dark-muted-foreground 50%, transparent 50%);
+      background-position: calc(100% - 14px) calc(50% + 2px),
+        calc(100% - 9px) calc(50% + 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
     .entity-field-row {
       border-bottom-color: rgba(255, 255, 255, 0.08);
     }
     .entity-check,
+    .entity-swagger-toggle,
     .entity-section-label,
     .entity-meta-grid .control-inline label {
-      color: $dark-color;
+      color: $dark-color !important;
     }
-    .entity-check input[type='checkbox'] {
+    .entity-check input[type='checkbox'],
+    .entity-swagger-toggle input[type='checkbox'] {
       accent-color: $dark-primary;
+    }
+    .radio {
+      color: $dark-color;
+      &.checked {
+        color: $dark-primary;
+      }
     }
   }
 }

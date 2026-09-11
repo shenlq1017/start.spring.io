@@ -92,7 +92,7 @@ function FieldRow({ field, onChange, onRemove }) {
         />
         {t('entities.field.unique')}
       </label>
-      <label className='entity-check' title='@Schema'>
+      <label className='entity-check' title={t('entities.field.swagger')}>
         <input
           type='checkbox'
           checked={field.swagger !== false}
@@ -155,6 +155,14 @@ function EntityForm({ entity, onChange }) {
             onChange={e => update({ name: e.target.value })}
           />
         </div>
+        <div className='control control-inline entity-meta-wide'>
+          <label>{t('entities.description')}</label>
+          <input
+            className='input'
+            value={entity.description || ''}
+            onChange={e => update({ description: e.target.value })}
+          />
+        </div>
         <div className='control control-inline'>
           <label>{t('entities.table')}</label>
           <input
@@ -177,14 +185,6 @@ function EntityForm({ entity, onChange }) {
             selected={entity.orm || 'mybatis-plus'}
             options={ORM_OPTIONS}
             onChange={value => update({ orm: value })}
-          />
-        </div>
-        <div className='control control-inline entity-meta-wide'>
-          <label>{t('entities.description')}</label>
-          <input
-            className='input'
-            value={entity.description || ''}
-            onChange={e => update({ description: e.target.value })}
           />
         </div>
         <label className='entity-check entity-meta-wide entity-swagger-toggle'>
@@ -237,13 +237,27 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
   const [activeIndex, setActiveIndex] = useState(initialIndex || 0)
   const scrollRef = useRef(null)
 
+  // Sync tab from initialIndex when opening / when home list picks an index.
+  // Do not reset on list.length alone — sidebar 「添加实体」 must keep the new tab.
   useEffect(() => {
     if (open) {
       setActiveIndex(
         Math.min(Math.max(initialIndex || 0, 0), Math.max(list.length - 1, 0))
       )
     }
-  }, [open, initialIndex, list.length])
+    // list.length omitted on purpose: sidebar add must not snap back to initialIndex
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialIndex])
+
+  useEffect(() => {
+    if (list.length === 0) {
+      setActiveIndex(0)
+      return
+    }
+    if (activeIndex > list.length - 1) {
+      setActiveIndex(list.length - 1)
+    }
+  }, [list.length, activeIndex])
 
   useEffect(() => {
     if (get(scrollRef, 'current') && open) {

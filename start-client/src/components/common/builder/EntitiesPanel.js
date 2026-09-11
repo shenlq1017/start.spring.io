@@ -51,20 +51,22 @@ function EntitiesPanel({ entities, onChange }) {
                 </span>
               ) : null}
             </button>
-            <button
-              type='button'
-              className='entity-link-btn'
-              onClick={() => openEditor(index)}
-            >
-              {t('entities.edit')}
-            </button>
-            <button
-              type='button'
-              className='entity-link-btn entity-remove'
-              onClick={() => removeAt(index)}
-            >
-              {t('entities.remove')}
-            </button>
+            <span className='entity-chip-actions'>
+              <button
+                type='button'
+                className='entity-link-btn'
+                onClick={() => openEditor(index)}
+              >
+                {t('entities.edit')}
+              </button>
+              <button
+                type='button'
+                className='entity-link-btn entity-remove'
+                onClick={() => removeAt(index)}
+              >
+                {t('entities.remove')}
+              </button>
+            </span>
           </li>
         ))}
       </ul>
