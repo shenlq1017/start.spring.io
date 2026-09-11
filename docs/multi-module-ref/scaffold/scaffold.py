@@ -787,8 +787,8 @@ def gen_crud(target: Path, ctx: dict) -> None:
     a = f"{svc}-application/src/main/java/{ctx['base_package'].replace('.', '/')}/{ctx['prefix']}"
     _write(base / f"{a}/controller/{ctx['entity']}Controller.java", tpl("application/Controller.java.j2", ctx))
     _write(base / f"{a}/service/{ctx['entity']}ApplicationService.java", tpl("application/ApplicationService.java.j2", ctx))
+    # Prefer concrete QueryService (P11 / start.spring.io); no Interface + service/impl/
     _write(base / f"{a}/service/{ctx['entity']}QueryService.java", tpl("application/QueryService.java.j2", ctx))
-    _write(base / f"{a}/service/impl/{ctx['entity']}QueryServiceImpl.java", tpl("application/QueryServiceImpl.java.j2", ctx))
     _write(base / f"{a}/assembler/{ctx['entity']}Assembler.java", tpl("application/Assembler.java.j2", ctx))
     _write(base / f"{a}/advice/GlobalExceptionHandler.java", tpl("application/GlobalExceptionHandler.java.j2", ctx))
 

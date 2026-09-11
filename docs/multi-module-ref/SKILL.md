@@ -7,6 +7,7 @@ description: "企业级 Spring Boot 4 微服务代码生成：脚手架/工程�
 
 > 面向企业级 Spring Boot 微服务（Java 21 + Spring Boot 4.1 + Spring Cloud 2025.1 + Spring Cloud Alibaba + MyBatis-Plus + PostgreSQL 17）的代码生成，采用六模块 DDD 分层。
 > **所有生成物必须符合本文与模板中的架构约束**；规则冲突时以本文为准，禁止自行发明替代方案。
+> **与 start.spring.io 对齐**：本技能模板/脚手架默认产出与 Initializr 企业增强 CRUD（P11）一致的具体 Service 类；历史「QueryService 接口 + QueryServiceImpl」写法已弃用为默认。
 
 ## 使用方式
 
@@ -154,7 +155,7 @@ platform-parent/
 ├── {svc}-feign-client/          # {X}FeignClient + {X}FeignFallbackFactory
 ├── {svc}-domain/                # model, command, query, event, service, repository, exception
 ├── {svc}-infrastructure/        # persistence(entity/mapper/repository/converter/handler), cache, mq, outbox, saga, client/adapter, config
-├── {svc}-application/           # controller, service(+impl), assembler, advice, config
+├── {svc}-application/           # controller, service（具体类，默认无 impl/）, assembler, advice, config
 └── {svc}-bootstrap/             # {X}Application + application.yml + db/migration
 ```
 
@@ -238,11 +239,16 @@ feign-client/
 | 2 | contract：Request/Response DTO + 枚举 | [contract.md](templates/contract.md) |
 | 3 | domain：聚合 + 命令/查询 + 仓储接口 + 领域异常 | [domain.md](templates/domain.md) |
 | 4 | infrastructure：`{Entity}PO` + Mapper(+XML 按需) + `{Entity}Converter`(MapStruct) + `{Entity}RepositoryImpl` | [infrastructure.md](templates/infrastructure.md) |
-| 5 | application：`{Entity}Controller` + `{Entity}ApplicationService` + `{Entity}QueryService`(读侧 CQRS) + `{Entity}Assembler` | [application.md](templates/application.md) |
+| 5 | application：`{Entity}Controller` + `{Entity}ApplicationService`（具体类） + `{Entity}QueryService`（具体类，读侧 CQRS） + `{Entity}Assembler` | [application.md](templates/application.md) |
+
+**应用服务形态（与 start.spring.io Initializr 增强 CRUD / P11 对齐）**：
+- **默认**：`ApplicationService` / `QueryService` 均为具体 `@Service` 类；Controller 直接注入具体类型；**不**生成 `service/impl/` 与强制接口
+- **可选**：仅当同一端口需多实现时再拆 Interface + impl；脚手架 `scaffold.py crud` 默认只产出具体类
+- 保留：`ApiPath` `/{prefix}/v1/{resource}`、MP `Page` 分页 → `PageResult`、ReadMapper 投影、Swagger、Snowflake、软删 BOOLEAN 等
 
 **数据访问约定**（与 [infrastructure.md](templates/infrastructure.md) 一致）：
 - 单表条件/分页/COUNT：RepositoryImpl 内用 `Wrappers.lambdaQuery()`，禁止堆简单 XML
-- 读侧投影（CQRS）：`QueryService` 走 Mapper XML 直接投影 DTO，不经过领域对象
+- 读侧投影（CQRS）：具体类 `QueryService` 走 Mapper XML 直接投影 DTO，不经过领域对象
 - 仅联表、窗口函数、`INSERT ... ON CONFLICT` 等场景才自定义 XML
 
 ---
@@ -287,6 +293,7 @@ feign-client/
 - [ ] Nacos 用 `spring.config.import`；`spring.mvc.problemdetails.enabled: true`
 - [ ] 代码无 `synchronized`；时间字段类型与 SQL 一致（`OffsetDateTime`）
 - [ ] 每个字段有 `@Schema` 描述；必填有校验注解
+- [ ] ApplicationService / QueryService 为具体 `@Service`（默认无 Interface + `service/impl/`；与 Initializr 对齐）
 
 ---
 

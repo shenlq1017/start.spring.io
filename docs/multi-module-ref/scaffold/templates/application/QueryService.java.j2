@@ -1,16 +1,41 @@
 package {{ base_package }}.{{ prefix }}.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.enterprise.common.core.page.PageResult;
 import {{ base_package }}.{{ prefix }}.contract.dto.request.Query{{ entity }}Request;
 import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}DetailResponse;
 import {{ base_package }}.{{ prefix }}.contract.dto.response.{{ entity }}SummaryResponse;
+import {{ base_package }}.{{ prefix }}.domain.exception.{{ entity }}NotFoundException;
+import {{ base_package }}.{{ prefix }}.infrastructure.persistence.mapper.{{ entity }}ReadMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * {{ description }}查询服务（读侧 CQRS）：直接投影 DTO，不加载聚合、不触发领域逻辑
+ * {{ description }}查询服务（读侧 CQRS）：ReadMapper 投影 DTO，不经领域对象。
+ * 默认具体类（无 Interface + impl/），与 start.spring.io / P11 生成习惯一致。
  */
-public interface {{ entity }}QueryService {
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class {{ entity }}QueryService {
 
-    {{ entity }}DetailResponse detail(String id);
+    private final {{ entity }}ReadMapper {{ entity_lower }}ReadMapper;
 
-    PageResult<{{ entity }}SummaryResponse> page(Query{{ entity }}Request query);
+    public {{ entity }}DetailResponse detail(String id) {
+        {{ entity }}DetailResponse detail = {{ entity_lower }}ReadMapper.selectDetailById(id);
+        if (detail == null) {
+            throw new {{ entity }}NotFoundException(id);
+        }
+        return detail;
+    }
+
+    public PageResult<{{ entity }}SummaryResponse> page(Query{{ entity }}Request query) {
+        Page<{{ entity }}SummaryResponse> page = Page.of(query.current(), query.size());
+        return PageResult.of(
+                {{ entity_lower }}ReadMapper.selectSummaryPage(page, query).getRecords(),
+                page.getTotal(),
+                page.getCurrent(),
+                page.getSize());
+    }
 }

@@ -135,52 +135,36 @@ public class {Entity}ApplicationService {
 
 > **写后读一致性**：创建/更新后紧接着的查询走主库路由（同事务内查询天然主库）；跨请求场景用基于 ID 的短时缓存兜底复制延迟。
 
-## 3. QueryService（读侧 CQRS）
+## 3. QueryService（读侧 CQRS，默认具体类）
+
+> **与 start.spring.io / P11 对齐**：`ApplicationService` / `QueryService` 默认生成**具体 `@Service` 类**，不强制 `Interface` + `service/impl/`。仅当同一端口需多实现（如多数据源读模型）时再拆接口；脚手架与 Initializr 增强 CRUD 默认不生成 impl。
 
 ```java
 package {basePackage}.{prefix}.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.enterprise.common.core.page.PageResult;
 import {basePackage}.{prefix}.contract.dto.request.Query{Entity}Request;
 import {basePackage}.{prefix}.contract.dto.response.{Entity}DetailResponse;
 import {basePackage}.{prefix}.contract.dto.response.{Entity}SummaryResponse;
-
-/**
- * {description}查询服务（读侧 CQRS）：
- * 走 Mapper XML / lambdaQuery 直接投影 DTO，不加载聚合、不触发领域逻辑
- */
-public interface {Entity}QueryService {
-
-    {Entity}DetailResponse detail(String id);
-
-    PageResult<{Entity}SummaryResponse> page(Query{Entity}Request query);
-}
-```
-
-```java
-package {basePackage}.{prefix}.service.impl;
-
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.enterprise.common.core.page.PageResult;
-import {basePackage}.{prefix}.contract.dto.request.Query{Entity}Request;
-import {basePackage}.{prefix}.contract.dto.response.*;
 import {basePackage}.{prefix}.domain.exception.{Entity}NotFoundException;
-import {basePackage}.{prefix}.service.{Entity}QueryService;
+import {basePackage}.{prefix}.infrastructure.persistence.mapper.{Entity}ReadMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.function.Function;
-
+/**
+ * {description}查询服务（读侧 CQRS）：
+ * ReadMapper XML 直接投影 DTO，不加载聚合、不触发领域逻辑；具体类，无 Interface+Impl
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class {Entity}QueryServiceImpl implements {Entity}QueryService {
+public class {Entity}QueryService {
 
-    // 注入 infrastructure 的 Mapper（bootstrap 完成装配；读侧允许直接依赖 Mapper 投影）
+    // 注入 infrastructure 的 ReadMapper（bootstrap 完成装配；读侧允许直接依赖 Mapper 投影）
     private final {Entity}ReadMapper {entity}ReadMapper;
 
-    @Override
     public {Entity}DetailResponse detail(String id) {
         {Entity}DetailResponse detail = {entity}ReadMapper.selectDetailById(id);
         if (detail == null) {
@@ -189,11 +173,13 @@ public class {Entity}QueryServiceImpl implements {Entity}QueryService {
         return detail;
     }
 
-    @Override
     public PageResult<{Entity}SummaryResponse> page(Query{Entity}Request query) {
         Page<{Entity}SummaryResponse> page = Page.of(query.current(), query.size());
-        return PageResult.of({entity}ReadMapper.selectSummaryPage(page, query),
-                Function.identity());
+        return PageResult.of(
+                {entity}ReadMapper.selectSummaryPage(page, query).getRecords(),
+                page.getTotal(),
+                page.getCurrent(),
+                page.getSize());
     }
 }
 ```
@@ -285,5 +271,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 1. Controller 禁止出现 `ApiResponse`/`R`，禁止使用 `ResponseBodyAdvice` 自动包装
 2. ApplicationService 只做编排：装配命令 → 聚合行为 → 仓储 → 返回；业务规则写进聚合
-3. 读侧走 QueryService + XML 投影；写侧走聚合 + 仓储；两者不混用
+3. 读侧走具体类 QueryService + XML 投影；写侧走具体类 ApplicationService + 聚合 + 仓储；两者不混用；默认无 Interface+impl/
 4. 分页响应统一 `PageResult<T>`，禁止直接暴露 MyBatis-Plus `IPage`
