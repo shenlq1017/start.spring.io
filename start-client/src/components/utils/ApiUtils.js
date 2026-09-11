@@ -3,6 +3,10 @@ import querystring from 'querystring'
 import set from 'lodash/set'
 
 import Extend from '../../Extend.json'
+import {
+  translateDependency,
+  translateDependencyGroup,
+} from '../../i18n/deps-zh'
 import {applyArchitectureDependencies} from './Architecture'
 import {
   isEntitiesPanelVisible,
@@ -21,6 +25,8 @@ const PROPERTIES_MAPPING_URL = {
   jvmVersion: 'meta.java',
   groupId: 'meta.group',
   artifactId: 'meta.artifact',
+  name: 'meta.name',
+  description: 'meta.description',
   packageName: 'meta.packageName',
   dependencies: 'dependencies',
 }
@@ -71,8 +77,14 @@ export const getShareUrl = values => {
     get(values, 'template'),
     entities
   )
-  if (isTemplateVisible(architecture) && template) {
-    params = `${params}&template=${encodeURIComponent(template)}`
+  if (isTemplateVisible(architecture)) {
+    const tpl =
+      template ||
+      normalizeTemplate(architecture, undefined, entities) ||
+      ''
+    if (tpl) {
+      params = `${params}&template=${encodeURIComponent(tpl)}`
+    }
   }
   if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
     const payload = JSON.stringify(serializeEntitiesForApi(entities))
@@ -223,11 +235,16 @@ export const getLists = json => {
   get(json, 'dependencies.values', []).forEach(group => {
     group.values.forEach(item => {
       const extend = Extend.find(it => it.id === get(item, 'id', ''))
+      const id = `${get(item, 'id', '')}`
       const val = {
-        id: `${get(item, 'id', '')}`,
-        name: `${get(item, 'name', '')}`,
-        group: `${group.name}`,
-        description: `${get(item, 'description', '')}`,
+        id,
+        name: translateDependency(id, 'name', `${get(item, 'name', '')}`),
+        group: translateDependencyGroup(`${group.name}`),
+        description: translateDependency(
+          id,
+          'description',
+          `${get(item, 'description', '')}`
+        ),
         versionRange: `${get(item, 'versionRange', '')}`,
         versionRequirement: `${get(item, 'versionRange', '')}`,
         weight: get(extend, 'weight', 50),
@@ -269,13 +286,17 @@ export const getLists = json => {
 }
 
 export const getDefaultValues = json => {
+  const artifact = get(json, 'artifactId.default')
   return {
     project: get(json, 'type.default'),
     language: get(json, 'language.default'),
     boot: get(json, 'bootVersion.default'),
     meta: {
       group: get(json, 'groupId.default'),
-      artifact: get(json, 'artifactId.default'),
+      artifact,
+      name: get(json, 'name.default') || artifact || 'demo',
+      description:
+        get(json, 'description.default') || 'Demo project for Spring Boot',
       packaging: get(json, 'packaging.default'),
       packageName: get(json, 'packageName.default'),
       java: get(json, 'javaVersion.default'),
@@ -303,13 +324,17 @@ export const isValidDependency = function isValidDependency(boot, dependency) {
 
 export const getProject = function getProject(url, values, config) {
   return new Promise((resolve, reject) => {
+    const artifact = get(values, 'meta.artifact')
     const params = querystring.stringify({
       type: get(values, 'project'),
       language: get(values, 'language'),
       bootVersion: get(values, 'boot'),
-      baseDir: get(values, 'meta.artifact'),
+      baseDir: artifact,
       groupId: get(values, 'meta.group'),
-      artifactId: get(values, 'meta.artifact'),
+      artifactId: artifact,
+      name: get(values, 'meta.name') || artifact || 'demo',
+      description:
+        get(values, 'meta.description') || 'Demo project for Spring Boot',
       packageName: get(values, 'meta.packageName'),
       packaging: get(values, 'meta.packaging'),
       javaVersion: get(values, 'meta.java'),
@@ -335,8 +360,14 @@ export const getProject = function getProject(url, values, config) {
       get(values, 'template'),
       entities
     )
-    if (isTemplateVisible(architecture) && template) {
-      extra += `&template=${encodeURIComponent(template)}`
+    if (isTemplateVisible(architecture)) {
+      const tpl =
+        template ||
+        normalizeTemplate(architecture, undefined, entities) ||
+        ''
+      if (tpl) {
+        extra += `&template=${encodeURIComponent(tpl)}`
+      }
     }
     if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
       extra += `&entities=${encodeURIComponent(

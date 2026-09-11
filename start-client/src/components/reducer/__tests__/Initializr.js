@@ -46,7 +46,7 @@ describe('COMPLETE action', () => {
       },
     })
     expect(get(result, 'share')).toBe(
-      'type=maven-project&language=java&platformVersion=2.2.0.RELEASE&packaging=jar&configurationFileFormat=properties&jvmVersion=1.8&groupId=com.example&artifactId=demo&packageName=com.example.demo&dependencies='
+      'type=maven-project&language=java&platformVersion=2.2.0.RELEASE&packaging=jar&configurationFileFormat=properties&jvmVersion=1.8&groupId=com.example&artifactId=demo&name=demo&description=Demo%20project%20for%20Spring%20Boot&packageName=com.example.demo&dependencies='
     )
     expect(get(result, 'values.project')).toBe('maven-project')
     expect(get(result, 'values.language')).toBe('java')

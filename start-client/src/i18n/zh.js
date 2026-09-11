@@ -1,5 +1,5 @@
 /**
- * zh-CN strings for the main Initializr builder flow (P0).
+ * zh-CN strings for the main Initializr builder flow.
  * Use t('key') for lookups; unknown keys fall back to the key itself.
  */
 const zh = {
@@ -10,6 +10,8 @@ const zh = {
   'Project Metadata': '项目元数据',
   Group: 'Group',
   Artifact: 'Artifact',
+  Name: '名称',
+  Description: '描述',
   'Package name': '包名',
   Packaging: '打包',
   Configuration: '配置格式',
@@ -40,13 +42,19 @@ const zh = {
   'entities.db': '数据库',
   'entities.orm': 'ORM',
   'entities.description': '中文描述',
+  'entities.swagger': 'Swagger / @Schema',
   'entities.fields': '字段',
   'entities.field.name': '字段名',
+  'entities.field.type': '类型',
   'entities.field.required': '必填',
   'entities.field.unique': '唯一',
+  'entities.field.description': '字段描述',
+  'entities.field.swagger': 'Schema',
   'entities.field.add': '添加字段',
   'entities.field.remove': '删除字段',
   'entities.apis': '接口',
+  'entities.collapse': '收起',
+  'entities.expand': '展开',
   'boot.unsupported': 'Spring Boot {value} 不受支持，请选择有效版本。',
   'deps.search.placeholder': 'Web、Security、JPA、Actuator、Devtools…',
   'deps.multi.help': '按住 {symb} 可多选添加',

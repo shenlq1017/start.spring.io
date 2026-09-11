@@ -42,13 +42,26 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 	private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		if (path == null) {
+			return true;
+		}
+		// Match /starter.zip, /starter.tgz and any context-path prefix
+		return !(path.endsWith("/starter.zip") || path.endsWith("/starter.tgz") || path.equals("/starter.zip")
+				|| path.equals("/starter.tgz") || path.contains("starter.zip") || path.contains("starter.tgz"));
+	}
+
+	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		try {
-			String template = request.getParameter("template");
-			String entitiesRaw = request.getParameter("entities");
+			String template = firstNonBlank(request.getParameter("template"), request.getParameter("projectTemplate"));
+			String entitiesRaw = firstNonBlank(request.getParameter("entities"), request.getParameter("entity"));
 			List<GenerationRequestAttributes.EntitySpec> entities = parseEntities(entitiesRaw);
-			GenerationRequestAttributes.set(new GenerationRequestAttributes(template, entitiesRaw, entities));
+			GenerationRequestAttributes attrs = new GenerationRequestAttributes(template, entitiesRaw, entities);
+			GenerationRequestAttributes.set(attrs);
+			request.setAttribute(GenerationRequestAttributes.REQUEST_ATTRIBUTE, attrs);
 			filterChain.doFilter(request, response);
 		}
 		finally {
@@ -60,11 +73,13 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 		if (raw == null || raw.isBlank()) {
 			return List.of();
 		}
-		String json = raw;
+		String json = raw.trim();
 		try {
-			// Some clients double-encode; tolerate a single decode pass when needed
-			if (!json.trim().startsWith("[")) {
-				json = URLDecoder.decode(json, StandardCharsets.UTF_8);
+			// Some clients double-encode; tolerate decode passes when needed
+			int guard = 0;
+			while (!json.startsWith("[") && !json.startsWith("{") && guard < 2) {
+				json = URLDecoder.decode(json, StandardCharsets.UTF_8).trim();
+				guard++;
 			}
 			JsonNode root = MAPPER.readTree(json);
 			if (!root.isArray()) {
@@ -87,7 +102,8 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 		if (fieldsNode != null && fieldsNode.isArray()) {
 			for (JsonNode f : fieldsNode) {
 				fields.add(new GenerationRequestAttributes.FieldSpec(text(f, "name"), text(f, "type"),
-						bool(f, "required", false), bool(f, "unique", false)));
+						bool(f, "required", false), bool(f, "unique", false), text(f, "description"),
+						bool(f, "swagger", true)));
 			}
 		}
 		JsonNode apisNode = node.get("apis");
@@ -98,7 +114,7 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 					bool(apisNode, "delete", true), bool(apisNode, "import", false), bool(apisNode, "export", false));
 		}
 		return new GenerationRequestAttributes.EntitySpec(text(node, "name"), text(node, "table"), text(node, "db"),
-				text(node, "orm"), text(node, "description"), fields, apis);
+				text(node, "orm"), text(node, "description"), bool(node, "swagger", true), fields, apis);
 	}
 
 	private static String text(JsonNode node, String field) {
@@ -109,6 +125,16 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 	private static boolean bool(JsonNode node, String field, boolean defaultValue) {
 		JsonNode n = node.get(field);
 		return ((n == null) || n.isNull()) ? defaultValue : n.asBoolean();
+	}
+
+	private static String firstNonBlank(String a, String b) {
+		if (a != null && !a.isBlank()) {
+			return a;
+		}
+		if (b != null && !b.isBlank()) {
+			return b;
+		}
+		return (a != null) ? a : b;
 	}
 
 }

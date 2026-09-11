@@ -23,6 +23,8 @@ export const defaultInitializrContext = {
     meta: {
       group: '',
       artifact: '',
+      name: '',
+      description: '',
       packaging: '',
       packageName: '',
       java: '',
@@ -71,6 +73,13 @@ const getPersistedOrDefault = json => {
     meta: {
       group: get(json, 'defaultValues.meta').group,
       artifact: get(json, 'defaultValues.meta').artifact,
+      name:
+        get(json, 'defaultValues.meta').name ||
+        get(json, 'defaultValues.meta').artifact ||
+        'demo',
+      description:
+        get(json, 'defaultValues.meta').description ||
+        'Demo project for Spring Boot',
       packageName: get(json, 'defaultValues.meta').packageName,
       packaging:
         localStorage.getItem('packaging') ||
@@ -163,6 +172,9 @@ export function reducer(state, action) {
           'packageName',
           `${get(meta, 'group')}.${get(meta, 'artifact')}`
         )
+        if (!get(meta, 'name')) {
+          set(meta, 'name', get(meta, 'artifact'))
+        }
       }
       persist(changes)
       const values = {

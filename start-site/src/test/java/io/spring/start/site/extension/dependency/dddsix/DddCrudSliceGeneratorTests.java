@@ -45,9 +45,9 @@ class DddCrudSliceGeneratorTests {
 	@Test
 	void enhancedTemplateGeneratesUserCrudFiles(@TempDir Path projectRoot) throws Exception {
 		GenerationRequestAttributes.EntitySpec user = new GenerationRequestAttributes.EntitySpec("User", "sys_user",
-				"postgresql", "mybatis-plus", "用户",
-				List.of(new GenerationRequestAttributes.FieldSpec("username", "String", true, true),
-						new GenerationRequestAttributes.FieldSpec("email", "String", false, false)),
+				"postgresql", "mybatis-plus", "用户", true,
+				List.of(new GenerationRequestAttributes.FieldSpec("username", "String", true, true, "用户名", true),
+						new GenerationRequestAttributes.FieldSpec("email", "String", false, false, "邮箱", true)),
 				new GenerationRequestAttributes.ApiFlags(true, true, true, true, true, true, true));
 		GenerationRequestAttributes.set(new GenerationRequestAttributes("ddd-enhanced", "[]", List.of(user)));
 
@@ -81,6 +81,11 @@ class DddCrudSliceGeneratorTests {
 		String controller = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/controller/UserController.java"));
 		assertThat(controller).contains("DeleteMapping").contains("/import").contains("/export");
+		String createReq = Files.readString(projectRoot.resolve(
+				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"));
+		assertThat(createReq).contains("@Schema").contains("用户名");
+		assertThat(projectRoot
+			.resolve("demo-service-bootstrap/src/main/java/com/example/demo/DemoServiceApplication.java")).exists();
 	}
 
 	@Test

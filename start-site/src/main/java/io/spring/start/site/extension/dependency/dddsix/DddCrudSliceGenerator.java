@@ -67,14 +67,14 @@ final class DddCrudSliceGenerator {
 		// Contract DTOs / constants / enums
 		String cBase = svc + "-contract/src/main/java/" + pkgPath + "/contract";
 		write(root.resolve(cBase + "/dto/request/Create" + entity + "Request.java"),
-				createRequest(pkg, entity, desc, fields));
+				createRequest(pkg, entity, desc, fields, e.swagger()));
 		write(root.resolve(cBase + "/dto/request/Update" + entity + "Request.java"),
-				updateRequest(pkg, entity, desc, fields));
+				updateRequest(pkg, entity, desc, fields, e.swagger()));
 		write(root.resolve(cBase + "/dto/request/Query" + entity + "Request.java"), queryRequest(pkg, entity, desc));
 		write(root.resolve(cBase + "/dto/response/" + entity + "DetailResponse.java"),
-				detailResponse(pkg, entity, desc, fields));
+				detailResponse(pkg, entity, desc, fields, e.swagger()));
 		write(root.resolve(cBase + "/dto/response/" + entity + "SummaryResponse.java"),
-				summaryResponse(pkg, entity, desc, fields));
+				summaryResponse(pkg, entity, desc, fields, e.swagger()));
 		write(root.resolve(cBase + "/constant/" + entity + "ApiPath.java"), apiPath(pkg, entity, resource));
 		write(root.resolve(cBase + "/enums/" + entity + "StatusEnum.java"), statusEnum(pkg, entity, desc));
 
@@ -143,7 +143,8 @@ final class DddCrudSliceGenerator {
 				""".formatted(desc, table, cols, uniques, table, table);
 	}
 
-	private static String createRequest(String pkg, String entity, String desc, List<FieldSpec> fields) {
+	private static String createRequest(String pkg, String entity, String desc, List<FieldSpec> fields,
+			boolean entitySwagger) {
 		return """
 				package %s.contract.dto.request;
 
@@ -151,13 +152,16 @@ final class DddCrudSliceGenerator {
 				/**
 				 * 创建%s请求
 				 */
+				%s
 				public record Create%sRequest(
 				%s) {
 				}
-				""".formatted(pkg, importsForFields(fields), desc, entity, recordFields(fields, true));
+				""".formatted(pkg, importsForFields(fields, entitySwagger), desc, schemaType(entitySwagger, desc),
+				entity, recordFields(fields, true, entitySwagger));
 	}
 
-	private static String updateRequest(String pkg, String entity, String desc, List<FieldSpec> fields) {
+	private static String updateRequest(String pkg, String entity, String desc, List<FieldSpec> fields,
+			boolean entitySwagger) {
 		return """
 				package %s.contract.dto.request;
 
@@ -165,10 +169,12 @@ final class DddCrudSliceGenerator {
 				/**
 				 * 更新%s请求
 				 */
+				%s
 				public record Update%sRequest(
 				%s) {
 				}
-				""".formatted(pkg, importsForFields(fields), desc, entity, recordFields(fields, false));
+				""".formatted(pkg, importsForFields(fields, entitySwagger), desc, schemaType(entitySwagger, desc),
+				entity, recordFields(fields, false, entitySwagger));
 	}
 
 	private static String queryRequest(String pkg, String entity, String desc) {
@@ -190,10 +196,9 @@ final class DddCrudSliceGenerator {
 				""".formatted(pkg, desc, entity);
 	}
 
-	private static String detailResponse(String pkg, String entity, String desc, List<FieldSpec> fields) {
-		String extra = fields.stream()
-			.map((f) -> "		" + f.type() + " " + f.name())
-			.collect(Collectors.joining(",\n"));
+	private static String detailResponse(String pkg, String entity, String desc, List<FieldSpec> fields,
+			boolean entitySwagger) {
+		String extra = fields.stream().map((f) -> recordComponent(f, entitySwagger)).collect(Collectors.joining(",\n"));
 		if (!extra.isEmpty()) {
 			extra = ",\n" + extra;
 		}
@@ -204,19 +209,20 @@ final class DddCrudSliceGenerator {
 				/**
 				 * %s详情
 				 */
+				%s
 				public record %sDetailResponse(
 						String id,
 						String status%s,
 						long version) {
 				}
-				""".formatted(pkg, importsForFields(fields), desc, entity, extra);
+				""".formatted(pkg, importsForFields(fields, entitySwagger), desc, schemaType(entitySwagger, desc),
+				entity, extra);
 	}
 
-	private static String summaryResponse(String pkg, String entity, String desc, List<FieldSpec> fields) {
+	private static String summaryResponse(String pkg, String entity, String desc, List<FieldSpec> fields,
+			boolean entitySwagger) {
 		List<FieldSpec> brief = fields.stream().limit(3).toList();
-		String extra = brief.stream()
-			.map((f) -> "		" + f.type() + " " + f.name())
-			.collect(Collectors.joining(",\n"));
+		String extra = brief.stream().map((f) -> recordComponent(f, entitySwagger)).collect(Collectors.joining(",\n"));
 		if (!extra.isEmpty()) {
 			extra = ",\n" + extra;
 		}
@@ -227,11 +233,13 @@ final class DddCrudSliceGenerator {
 				/**
 				 * %s摘要
 				 */
+				%s
 				public record %sSummaryResponse(
 						String id,
 						String status%s) {
 				}
-				""".formatted(pkg, importsForFields(brief), desc, entity, extra);
+				""".formatted(pkg, importsForFields(brief, entitySwagger), desc, schemaType(entitySwagger, desc),
+				entity, extra);
 	}
 
 	private static String apiPath(String pkg, String entity, String resource) {
@@ -760,17 +768,46 @@ final class DddCrudSliceGenerator {
 	}
 
 	private static String recordFields(List<FieldSpec> fields, boolean includeRequiredHints) {
+		return recordFields(fields, includeRequiredHints, false);
+	}
+
+	private static String recordFields(List<FieldSpec> fields, boolean includeRequiredHints, boolean entitySwagger) {
 		if (fields.isEmpty()) {
 			return "		String placeholder";
 		}
-		return fields.stream().map((f) -> "		" + f.type() + " " + f.name()).collect(Collectors.joining(",\n"));
+		return fields.stream().map((f) -> recordComponent(f, entitySwagger)).collect(Collectors.joining(",\n"));
+	}
+
+	private static String recordComponent(FieldSpec f, boolean entitySwagger) {
+		boolean useSchema = entitySwagger && f.swagger();
+		if (useSchema) {
+			String d = f.schemaDescription().replace("\\", "\\\\").replace("\"", "\\\"");
+			return "		@Schema(description = \"%s\")\n		%s %s".formatted(d, f.type(), f.name());
+		}
+		return "		" + f.type() + " " + f.name();
+	}
+
+	private static String schemaType(boolean entitySwagger, String desc) {
+		if (!entitySwagger) {
+			return "";
+		}
+		String d = desc.replace("\\", "\\\\").replace("\"", "\\\"");
+		return "@Schema(description = \"%s\")".formatted(d);
 	}
 
 	private static String importsForFields(List<FieldSpec> fields) {
+		return importsForFields(fields, false);
+	}
+
+	private static String importsForFields(List<FieldSpec> fields, boolean entitySwagger) {
 		StringBuilder sb = new StringBuilder();
 		boolean bigDecimal = fields.stream().anyMatch((f) -> "BigDecimal".equals(f.type()));
 		boolean localDate = fields.stream().anyMatch((f) -> "LocalDate".equals(f.type()));
 		boolean localDateTime = fields.stream().anyMatch((f) -> "LocalDateTime".equals(f.type()));
+		boolean needSchema = entitySwagger && (fields.isEmpty() || fields.stream().anyMatch(FieldSpec::swagger));
+		if (needSchema || entitySwagger) {
+			sb.append("import io.swagger.v3.oas.annotations.media.Schema;\n");
+		}
 		if (bigDecimal) {
 			sb.append("import java.math.BigDecimal;\n");
 		}

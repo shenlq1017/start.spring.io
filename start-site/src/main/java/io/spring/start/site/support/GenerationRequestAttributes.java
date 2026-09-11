@@ -21,11 +21,15 @@ import java.util.List;
 
 /**
  * Request-scoped generation extras ({@code template}, {@code entities}) captured from
- * query parameters for ProjectContributor consumption via ThreadLocal.
+ * query parameters for ProjectContributor consumption via ThreadLocal / request
+ * attributes.
  *
  * @author start.spring.io China ecosystem
  */
 public final class GenerationRequestAttributes {
+
+	/** Servlet request attribute key (backup to ThreadLocal). */
+	public static final String REQUEST_ATTRIBUTE = GenerationRequestAttributes.class.getName();
 
 	private static final ThreadLocal<GenerationRequestAttributes> HOLDER = new ThreadLocal<>();
 
@@ -54,8 +58,15 @@ public final class GenerationRequestAttributes {
 	}
 
 	public boolean isDddEnhanced() {
-		return "ddd-enhanced".equals(this.template)
-				|| (!this.entities.isEmpty() && (this.template.isEmpty() || this.template.startsWith("ddd-")));
+		String t = this.template;
+		if ("ddd-enhanced".equals(t)) {
+			return true;
+		}
+		if ("ddd-standard".equals(t)) {
+			return false;
+		}
+		// Blank / unknown: enhance when entities present, otherwise default enhance
+		return !this.entities.isEmpty() || t.isEmpty() || t.startsWith("ddd-");
 	}
 
 	public boolean isDddStandard() {
@@ -86,11 +97,12 @@ public final class GenerationRequestAttributes {
 	 * @param table table name
 	 * @param db database id
 	 * @param orm ORM id
-	 * @param description Chinese description
+	 * @param description chinese description
+	 * @param swagger whether to emit OpenAPI {@code @Schema} on DTOs
 	 * @param fields field list
 	 * @param apis API flags
 	 */
-	public record EntitySpec(String name, String table, String db, String orm, String description,
+	public record EntitySpec(String name, String table, String db, String orm, String description, boolean swagger,
 			List<FieldSpec> fields, ApiFlags apis) {
 
 		public EntitySpec {
@@ -101,6 +113,22 @@ public final class GenerationRequestAttributes {
 			description = ((description == null) || description.isBlank()) ? name : description.trim();
 			fields = (fields != null) ? List.copyOf(fields) : List.of();
 			apis = (apis != null) ? apis : ApiFlags.allCrud();
+		}
+
+		/**
+		 * backward-compatible constructor without swagger flag (defaults swagger to
+		 * true).
+		 * @param name entity name
+		 * @param table table name
+		 * @param db database id
+		 * @param orm ORM id
+		 * @param description chinese description
+		 * @param fields field list
+		 * @param apis API flags
+		 */
+		public EntitySpec(String name, String table, String db, String orm, String description, List<FieldSpec> fields,
+				ApiFlags apis) {
+			this(name, table, db, orm, description, true, fields, apis);
 		}
 
 		public String entityLower() {
@@ -138,15 +166,30 @@ public final class GenerationRequestAttributes {
 	 * Field definition.
 	 *
 	 * @param name field name
-	 * @param type Java type
+	 * @param type java type
 	 * @param required whether required
 	 * @param unique whether unique
+	 * @param description field description (for @Schema / comments)
+	 * @param swagger whether to emit @Schema on this field
 	 */
-	public record FieldSpec(String name, String type, boolean required, boolean unique) {
+	public record FieldSpec(String name, String type, boolean required, boolean unique, String description,
+			boolean swagger) {
 
 		public FieldSpec {
 			name = ((name == null) || name.isBlank()) ? "field" : name.trim();
 			type = ((type == null) || type.isBlank()) ? "String" : type.trim();
+			description = (description != null) ? description.trim() : "";
+		}
+
+		/**
+		 * backward-compatible 4-arg constructor (empty description, swagger false).
+		 * @param name field name
+		 * @param type java type
+		 * @param required whether required
+		 * @param unique whether unique
+		 */
+		public FieldSpec(String name, String type, boolean required, boolean unique) {
+			this(name, type, required, unique, "", false);
 		}
 
 		public String getter() {
@@ -175,6 +218,10 @@ public final class GenerationRequestAttributes {
 				case "LocalDateTime", "OffsetDateTime" -> "TIMESTAMPTZ";
 				default -> "VARCHAR(255)";
 			};
+		}
+
+		public String schemaDescription() {
+			return (this.description == null || this.description.isBlank()) ? this.name : this.description;
 		}
 	}
 

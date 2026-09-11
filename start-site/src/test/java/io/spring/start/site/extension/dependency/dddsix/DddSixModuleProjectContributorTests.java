@@ -24,6 +24,8 @@ import io.spring.initializr.generator.project.MutableProjectDescription;
 import io.spring.initializr.generator.version.Version;
 import io.spring.initializr.metadata.InitializrMetadata;
 import io.spring.initializr.metadata.InitializrMetadataBuilder;
+import io.spring.start.site.support.GenerationRequestAttributes;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -35,6 +37,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author start.spring.io China ecosystem
  */
 class DddSixModuleProjectContributorTests {
+
+	@AfterEach
+	void clearAttrs() {
+		GenerationRequestAttributes.clear();
+	}
 
 	@Test
 	void contributesSixModuleTree(@TempDir Path projectRoot) throws Exception {
@@ -48,6 +55,7 @@ class DddSixModuleProjectContributorTests {
 		description.setPlatformVersion(Version.parse("4.1.1"));
 		description.setLanguage(new JavaLanguage("21"));
 
+		GenerationRequestAttributes.set(new GenerationRequestAttributes("ddd-standard", "", java.util.List.of()));
 		InitializrMetadata metadata = InitializrMetadataBuilder.create().build();
 		DddSixModuleProjectContributor contributor = new DddSixModuleProjectContributor(description, metadata);
 

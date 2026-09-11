@@ -74,7 +74,8 @@ public class StartApplication {
 	public FilterRegistrationBean<GenerationRequestAttributesFilter> generationRequestAttributesFilter() {
 		FilterRegistrationBean<GenerationRequestAttributesFilter> bean = new FilterRegistrationBean<>();
 		bean.setFilter(new GenerationRequestAttributesFilter());
-		bean.addUrlPatterns("/starter.zip", "/starter.tgz");
+		// Broad pattern; filter self-scopes to starter.zip / starter.tgz
+		bean.addUrlPatterns("/*");
 		bean.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);
 		return bean;
 	}

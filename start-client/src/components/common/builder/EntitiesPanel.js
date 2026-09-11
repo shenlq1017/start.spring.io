@@ -7,6 +7,7 @@ import {
   FIELD_TYPE_OPTIONS,
   createDefaultField,
   createEmptyEntity,
+  normalizeField,
 } from '../../utils/Entities'
 import { t } from '../../../i18n/zh'
 
@@ -18,11 +19,13 @@ function FieldRow({ field, onChange, onRemove }) {
         value={field.name || ''}
         placeholder={t('entities.field.name')}
         onChange={e => onChange({ ...field, name: e.target.value })}
+        aria-label={t('entities.field.name')}
       />
       <select
         className='entity-select'
         value={field.type || 'String'}
         onChange={e => onChange({ ...field, type: e.target.value })}
+        aria-label={t('entities.field.type')}
       >
         {FIELD_TYPE_OPTIONS.map(opt => (
           <option key={opt.key} value={opt.key}>
@@ -30,6 +33,13 @@ function FieldRow({ field, onChange, onRemove }) {
           </option>
         ))}
       </select>
+      <input
+        className='entity-input entity-field-desc'
+        value={field.description || ''}
+        placeholder={t('entities.field.description')}
+        onChange={e => onChange({ ...field, description: e.target.value })}
+        aria-label={t('entities.field.description')}
+      />
       <label className='entity-check'>
         <input
           type='checkbox'
@@ -45,6 +55,14 @@ function FieldRow({ field, onChange, onRemove }) {
           onChange={e => onChange({ ...field, unique: e.target.checked })}
         />
         {t('entities.field.unique')}
+      </label>
+      <label className='entity-check' title='@Schema'>
+        <input
+          type='checkbox'
+          checked={field.swagger !== false}
+          onChange={e => onChange({ ...field, swagger: e.target.checked })}
+        />
+        {t('entities.field.swagger')}
       </label>
       <button
         type='button'
@@ -68,7 +86,7 @@ function EntityBlock({ entity, index, onChange, onRemove }) {
   const update = patch => onChange({ ...entity, ...patch })
   const updateField = (fi, next) => {
     const fields = [...(entity.fields || [])]
-    fields[fi] = next
+    fields[fi] = normalizeField(next)
     update({ fields })
   }
   const removeField = fi => {
@@ -80,7 +98,14 @@ function EntityBlock({ entity, index, onChange, onRemove }) {
     update({
       fields: [
         ...(entity.fields || []),
-        { name: 'field', type: 'String', required: false, unique: false },
+        {
+          name: 'field',
+          type: 'String',
+          required: false,
+          unique: false,
+          description: '',
+          swagger: true,
+        },
       ],
     })
   }
@@ -94,9 +119,16 @@ function EntityBlock({ entity, index, onChange, onRemove }) {
     <details className='entity-details' open={index === 0}>
       <summary className='entity-summary'>
         <span className='entity-summary-title'>
+          <span className='entity-summary-caret' aria-hidden='true' />
           {entity.name || t('entities.unnamed')}
           {entity.table ? (
             <span className='entity-summary-meta'> · {entity.table}</span>
+          ) : null}
+          {entity.description ? (
+            <span className='entity-summary-meta'>
+              {' '}
+              — {entity.description}
+            </span>
           ) : null}
         </span>
         <button
@@ -160,13 +192,21 @@ function EntityBlock({ entity, index, onChange, onRemove }) {
               onChange={e => update({ description: e.target.value })}
             />
           </label>
+          <label className='entity-check entity-meta-wide entity-swagger-toggle'>
+            <input
+              type='checkbox'
+              checked={entity.swagger !== false}
+              onChange={e => update({ swagger: e.target.checked })}
+            />
+            {t('entities.swagger')}
+          </label>
         </div>
 
         <div className='entity-section-label'>{t('entities.fields')}</div>
         {(entity.fields || []).map((field, fi) => (
           <FieldRow
             key={`f-${fi}`}
-            field={field}
+            field={normalizeField(field)}
             onChange={next => updateField(fi, next)}
             onRemove={() => removeField(fi)}
           />

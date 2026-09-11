@@ -49,8 +49,18 @@ body {
   }
 }
 
-// Card-like builder panels
+// Card-like builder panels — give Fields more width, Dependencies narrower
 .colset-main {
+  > .left {
+    flex: 0 0 60%;
+    max-width: 60%;
+    box-sizing: border-box;
+  }
+  > .right {
+    flex: 0 0 40%;
+    max-width: 40%;
+    box-sizing: border-box;
+  }
   .left,
   .right {
     > .control,
@@ -59,6 +69,29 @@ body {
     > form,
     > .form {
       // keep structure; pad sections visually via children
+    }
+  }
+}
+
+@media (min-width: 1280px) {
+  .colset-main {
+    > .left {
+      flex: 0 0 58%;
+      max-width: 58%;
+    }
+    > .right {
+      flex: 0 0 42%;
+      max-width: 42%;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .colset-main {
+    > .left,
+    > .right {
+      flex: none;
+      max-width: 100%;
     }
   }
 }
@@ -729,5 +762,46 @@ body.dark {
   }
   .entity-add-btn {
     border-color: rgba(255, 255, 255, 0.28);
+  }
+}
+
+
+// P3 EntitiesPanel polish
+.entity-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.entity-summary-caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  opacity: 0.55;
+  margin-right: 4px;
+  transition: transform 0.15s ease;
+}
+details.entity-details:not([open]) .entity-summary-caret {
+  transform: rotate(-90deg);
+}
+.entity-field-desc {
+  flex: 1 1 120px !important;
+  min-width: 100px;
+}
+.entity-swagger-toggle {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  margin-top: 2px;
+  font-size: 12px;
+}
+.entity-field-row {
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+  &:last-of-type {
+    border-bottom: 0;
   }
 }

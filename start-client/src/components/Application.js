@@ -149,6 +149,8 @@ export default function Application() {
       table: e.table,
       db: e.db,
       orm: e.orm,
+      description: e.description,
+      swagger: e.swagger,
       fields: e.fields,
       apis: e.apis,
     }))

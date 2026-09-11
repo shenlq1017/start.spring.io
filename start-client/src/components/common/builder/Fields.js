@@ -175,15 +175,6 @@ function Fields({
               </Control>
             )}
 
-            {showEntities && (
-              <Control text={t('Entities')} className='control-entities'>
-                <EntitiesPanel
-                  entities={entities}
-                  onChange={next => update({ entities: next })}
-                />
-              </Control>
-            )}
-
             <Control text={t('Project Metadata')}>
               <FieldInput
                 id='input-group'
@@ -199,6 +190,22 @@ function Fields({
                 text={t('Artifact')}
                 onChange={event => {
                   update({ meta: { artifact: event.target.value } })
+                }}
+              />
+              <FieldInput
+                id='input-name'
+                value={get(values, 'meta.name')}
+                text={t('Name')}
+                onChange={event => {
+                  update({ meta: { name: event.target.value } })
+                }}
+              />
+              <FieldInput
+                id='input-description'
+                value={get(values, 'meta.description')}
+                text={t('Description')}
+                onChange={event => {
+                  update({ meta: { description: event.target.value } })
                 }}
               />
               <FieldInput
@@ -237,6 +244,15 @@ function Fields({
                 }}
               />
             </Control>
+
+            {showEntities && (
+              <Control text={t('Entities')} className='control-entities'>
+                <EntitiesPanel
+                  entities={entities}
+                  onChange={next => update({ entities: next })}
+                />
+              </Control>
+            )}
           </div>
         </div>
         <div className='right'>

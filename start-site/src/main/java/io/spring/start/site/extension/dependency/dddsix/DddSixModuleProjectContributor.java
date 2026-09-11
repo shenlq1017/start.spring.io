@@ -108,30 +108,50 @@ class DddSixModuleProjectContributor implements ProjectContributor {
 	private void contributeCrudSlices(Path projectRoot, String svc, String packageName, Map<String, String> model)
 			throws IOException {
 		GenerationRequestAttributes attrs = GenerationRequestAttributes.get();
+		try {
+			var attrsHolder = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+			if (attrsHolder != null) {
+				Object reqAttr = attrsHolder.getAttribute(GenerationRequestAttributes.REQUEST_ATTRIBUTE,
+						org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
+				if (reqAttr instanceof GenerationRequestAttributes fromRequest) {
+					attrs = fromRequest;
+				}
+			}
+		}
+		catch (Exception ignored) {
+			// non-web unit tests
+		}
 		String template = attrs.getTemplate();
 		var entities = attrs.getEntities();
-		boolean enhanced = "ddd-enhanced".equals(template) || (!"ddd-standard".equals(template) && !entities.isEmpty());
-		if (!enhanced) {
+		if (!attrs.isDddEnhanced()) {
 			return;
 		}
 		if (entities.isEmpty()) {
 			entities = java.util.List.of(defaultUserEntity());
 		}
 		DddCrudSliceGenerator.generate(projectRoot, svc, packageName, entities);
-		// Mark README
 		Path readme = projectRoot.resolve("README-DDD.md");
 		if (Files.exists(readme)) {
-			String appendix = "\n\n## CRUD slices\nGenerated template=`" + template + "` entities=" + entities.size()
+			String effective = (template == null || template.isBlank()) ? "ddd-enhanced(default)" : template;
+			String appendix = "\n\n## CRUD slices\nGenerated template=`" + effective + "` entities=" + entities.size()
 					+ ".\n";
+			boolean anySwagger = entities.stream().anyMatch(GenerationRequestAttributes.EntitySpec::swagger)
+					|| entities.stream()
+						.flatMap((e) -> e.fields().stream())
+						.anyMatch(GenerationRequestAttributes.FieldSpec::swagger);
+			if (anySwagger) {
+				appendix += "OpenAPI `@Schema` annotations were emitted on DTOs — add `springdoc-openapi` (or Knife4j) if not already on the classpath.\n";
+			}
 			write(readme, Files.readString(readme) + appendix);
 		}
 	}
 
 	private static GenerationRequestAttributes.EntitySpec defaultUserEntity() {
-		return new GenerationRequestAttributes.EntitySpec("User", "sys_user", "postgresql", "mybatis-plus", "用户",
-				java.util.List.of(new GenerationRequestAttributes.FieldSpec("username", "String", true, true),
-						new GenerationRequestAttributes.FieldSpec("email", "String", false, false),
-						new GenerationRequestAttributes.FieldSpec("nickname", "String", false, false)),
+		return new GenerationRequestAttributes.EntitySpec("User", "sys_user", "postgresql", "mybatis-plus", "用户", true,
+				java.util.List.of(
+						new GenerationRequestAttributes.FieldSpec("username", "String", true, true, "用户名", true),
+						new GenerationRequestAttributes.FieldSpec("email", "String", false, false, "邮箱", true),
+						new GenerationRequestAttributes.FieldSpec("nickname", "String", false, false, "昵称", true)),
 				GenerationRequestAttributes.ApiFlags.allCrud());
 	}
 

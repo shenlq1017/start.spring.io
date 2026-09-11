@@ -1,4 +1,4 @@
-/** Default / helpers for multi-entity CRUD panel (P1). */
+/** Default / helpers for multi-entity CRUD panel. */
 
 export const FIELD_TYPE_OPTIONS = [
   { key: 'String', text: 'String' },
@@ -26,6 +26,19 @@ export function createDefaultField() {
     type: 'String',
     required: true,
     unique: false,
+    description: '',
+    swagger: true,
+  }
+}
+
+export function normalizeField(f = {}) {
+  return {
+    name: f.name || 'field',
+    type: f.type || 'String',
+    required: !!f.required,
+    unique: !!f.unique,
+    description: f.description || '',
+    swagger: f.swagger !== false,
   }
 }
 
@@ -37,10 +50,32 @@ export function createDefaultEntity(overrides = {}) {
     db: 'postgresql',
     orm: 'mybatis-plus',
     description: '用户',
+    swagger: true,
     fields: [
-      { name: 'username', type: 'String', required: true, unique: true },
-      { name: 'email', type: 'String', required: false, unique: false },
-      { name: 'nickname', type: 'String', required: false, unique: false },
+      {
+        name: 'username',
+        type: 'String',
+        required: true,
+        unique: true,
+        description: '用户名',
+        swagger: true,
+      },
+      {
+        name: 'email',
+        type: 'String',
+        required: false,
+        unique: false,
+        description: '邮箱',
+        swagger: true,
+      },
+      {
+        name: 'nickname',
+        type: 'String',
+        required: false,
+        unique: false,
+        description: '昵称',
+        swagger: true,
+      },
     ],
     apis: {
       create: true,
@@ -69,7 +104,7 @@ export function defaultEntities() {
   return [createDefaultEntity({ id: 'ent-default-user' })]
 }
 
-/** Compact payload for URL (drop client-only id if needed later). */
+/** Compact payload for URL (drop client-only id). */
 export function serializeEntitiesForApi(entities = []) {
   return entities.map(e => ({
     name: e.name,
@@ -77,11 +112,14 @@ export function serializeEntitiesForApi(entities = []) {
     db: e.db || 'postgresql',
     orm: e.orm || 'mybatis-plus',
     description: e.description || e.name,
+    swagger: e.swagger !== false,
     fields: (e.fields || []).map(f => ({
       name: f.name,
       type: f.type || 'String',
       required: !!f.required,
       unique: !!f.unique,
+      description: f.description || '',
+      swagger: f.swagger !== false,
     })),
     apis: {
       create: !!(e.apis && e.apis.create),
@@ -112,14 +150,11 @@ export function parseEntitiesFromParam(raw) {
         db: e.db || 'postgresql',
         orm: e.orm || 'mybatis-plus',
         description: e.description || e.name || '',
-        fields: Array.isArray(e.fields) && e.fields.length
-          ? e.fields.map(f => ({
-              name: f.name || 'field',
-              type: f.type || 'String',
-              required: !!f.required,
-              unique: !!f.unique,
-            }))
-          : [createDefaultField()],
+        swagger: e.swagger !== false,
+        fields:
+          Array.isArray(e.fields) && e.fields.length
+            ? e.fields.map(normalizeField)
+            : [createDefaultField()],
         apis: {
           create: e.apis?.create !== false,
           detail: e.apis?.detail !== false,

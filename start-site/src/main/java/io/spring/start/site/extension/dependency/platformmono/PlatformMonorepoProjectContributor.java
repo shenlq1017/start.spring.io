@@ -108,10 +108,24 @@ class PlatformMonorepoProjectContributor implements ProjectContributor {
 	private void writeSampleServicePlaceholder(Path projectRoot, Map<String, String> model) throws IOException {
 		Path sample = projectRoot.resolve("services/sample-service");
 		Files.createDirectories(sample);
+		var entities = GenerationRequestAttributes.get().getEntities();
+		StringBuilder entityNotes = new StringBuilder();
+		if (!entities.isEmpty()) {
+			entityNotes.append("\nConfigured entities (wire into a DDD service next):\n");
+			for (var e : entities) {
+				entityNotes.append("- ")
+					.append(e.name())
+					.append(" / ")
+					.append(e.table())
+					.append(" (")
+					.append(e.description())
+					.append(")\n");
+			}
+		}
 		String readme = "# sample-service\n\n"
 				+ "Platform enhanced template placeholder. Replace with a real DDD six-module service\n"
 				+ "(see business-microservice / ddd-six-module generator) or scaffold via spring-boot-gen.\n\n"
-				+ "Group: " + model.get("groupId") + "\n" + "Package: " + model.get("packageName") + "\n";
+				+ "Group: " + model.get("groupId") + "\n" + "Package: " + model.get("packageName") + "\n" + entityNotes;
 		write(sample.resolve("README.md"), readme);
 		Path servicesPom = projectRoot.resolve("services/pom.xml");
 		if (Files.exists(servicesPom)) {
