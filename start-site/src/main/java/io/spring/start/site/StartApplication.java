@@ -29,6 +29,7 @@ import io.spring.start.site.support.CacheableMavenVersionResolver;
 import io.spring.start.site.support.GenerationRequestAttributesFilter;
 import io.spring.start.site.support.StartInitializrMetadataUpdateStrategy;
 import io.spring.start.site.web.HomeController;
+import io.spring.start.site.web.ai.AiProjectController;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.boot.SpringApplication;
@@ -68,6 +69,11 @@ public class StartApplication {
 	@Bean
 	public HomeController homeController() {
 		return new HomeController();
+	}
+
+	@Bean
+	public AiProjectController aiProjectController() {
+		return new AiProjectController();
 	}
 
 	@Bean

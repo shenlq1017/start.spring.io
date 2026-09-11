@@ -37,3 +37,7 @@ target
 /start-client/package-lock.json
 /start-client/yarn-error.log
 /start-client/analysis
+
+# MCP
+mcp/node_modules/
+

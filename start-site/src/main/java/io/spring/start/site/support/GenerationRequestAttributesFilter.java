@@ -48,8 +48,10 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 			return true;
 		}
 		// Match /starter.zip, /starter.tgz and any context-path prefix
-		return !(path.endsWith("/starter.zip") || path.endsWith("/starter.tgz") || path.equals("/starter.zip")
-				|| path.equals("/starter.tgz") || path.contains("starter.zip") || path.contains("starter.tgz"));
+		boolean starter = path.endsWith("/starter.zip") || path.endsWith("/starter.tgz") || path.equals("/starter.zip")
+				|| path.equals("/starter.tgz") || path.contains("starter.zip") || path.contains("starter.tgz");
+		boolean aiProject = path.contains("/ai/v1/projects");
+		return !(starter || aiProject);
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class GenerationRequestAttributesFilter extends OncePerRequestFilter {
 		}
 	}
 
-	static List<GenerationRequestAttributes.EntitySpec> parseEntities(String raw) {
+	public static List<GenerationRequestAttributes.EntitySpec> parseEntities(String raw) {
 		if (raw == null || raw.isBlank()) {
 			return List.of();
 		}

@@ -1,0 +1,6 @@
+**/target
+**/node_modules
+**/.git
+docs/gh-pages-preview
+docs/p8-smoke-demo-service.zip
+**/npm-debug.log
