@@ -100,11 +100,20 @@ class DddCrudSliceGeneratorTests {
 				"demo-service-application/src/main/java/com/example/demo/application/controller/UserController.java"));
 		assertThat(controller).contains("DeleteMapping").contains("/import").contains("/export");
 		assertThat(controller).contains("@Tag").contains("@Operation").contains("@Parameter");
+		assertThat(controller).contains("@RequestMapping(UserApiPath.BASE)");
 		assertThat(controller).doesNotContain("TODO").doesNotContain("UnsupportedOperationException");
 
 		String apiPath = Files.readString(projectRoot
 			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/constant/UserApiPath.java"));
 		assertThat(apiPath).contains("\"/demo/v1/users\"");
+
+		assertThat(
+				projectRoot.resolve("demo-service-domain/src/main/java/com/example/demo/domain/query/PageSlice.java"))
+			.exists();
+
+		String queryImpl = Files.readString(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"));
+		assertThat(queryImpl).contains("PageSlice").contains("findPage").doesNotContain(".skip(");
 
 		String appService = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"));
@@ -115,6 +124,7 @@ class DddCrudSliceGeneratorTests {
 		String repoImpl = Files.readString(projectRoot.resolve(
 				"demo-service-infrastructure/src/main/java/com/example/demo/infrastructure/persistence/repository/UserRepositoryImpl.java"));
 		assertThat(repoImpl).contains("insert").contains("toDomain").doesNotContain("TODO");
+		assertThat(repoImpl).contains("Page.of").contains("selectPage").contains("findPage");
 
 		String createReq = Files.readString(projectRoot.resolve(
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"));

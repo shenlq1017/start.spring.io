@@ -101,6 +101,9 @@ final class DddCrudSliceGenerator {
 		String cBase = svc + "-contract/src/main/java/" + pkgPath + "/contract";
 		write(root.resolve(cBase + "/dto/response/PageResult.java"), pageResult(pkg));
 
+		String dShared = svc + "-domain/src/main/java/" + pkgPath + "/domain";
+		write(root.resolve(dShared + "/query/PageSlice.java"), pageSlice(pkg));
+
 		String aBase = svc + "-application/src/main/java/" + pkgPath + "/application";
 		write(root.resolve(aBase + "/advice/GlobalExceptionHandler.java"), globalAdvice(pkg, first));
 
@@ -198,6 +201,25 @@ final class DddCrudSliceGenerator {
 
 					public static <T> PageResult<T> of(List<T> records, long total, long current, long size) {
 						return new PageResult<>(records, total, current, size);
+					}
+
+				}
+				""".formatted(pkg);
+	}
+
+	private static String pageSlice(String pkg) {
+		return """
+				package %s.domain.query;
+
+				import java.util.List;
+
+				/**
+				 * Domain-layer page slice (no MyBatis-Plus IPage leak into domain).
+				 */
+				public record PageSlice<T>(List<T> records, long total) {
+
+					public static <T> PageSlice<T> of(List<T> records, long total) {
+						return new PageSlice<>(records, total);
 					}
 
 				}
@@ -692,8 +714,8 @@ final class DddCrudSliceGenerator {
 
 				import %s.domain.model.%s;
 				import %s.domain.query.%sQuery;
+				import %s.domain.query.PageSlice;
 
-				import java.util.List;
 				import java.util.Optional;
 
 				public interface %sRepository {
@@ -704,12 +726,10 @@ final class DddCrudSliceGenerator {
 
 					void deleteById(String id);
 
-					List<%s> findByQuery(%sQuery query);
-
-					long countByQuery(%sQuery query);
+					PageSlice<%s> findPage(%sQuery query, long current, long size);
 
 				}
-				""".formatted(pkg, pkg, entity, pkg, entity, entity, entity, entity, entity, entity, entity, entity);
+				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, entity, entity, entity, entity, entity);
 	}
 
 	private static String notFound(String pkg, String entity, String desc) {
@@ -862,14 +882,15 @@ final class DddCrudSliceGenerator {
 				package {{pkg}}.infrastructure.persistence.repository;
 
 				import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+				import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 				import {{pkg}}.domain.model.{{entity}};
 				import {{pkg}}.domain.query.{{entity}}Query;
+				import {{pkg}}.domain.query.PageSlice;
 				import {{pkg}}.domain.repository.{{entity}}Repository;
 				import {{pkg}}.infrastructure.persistence.converter.{{entity}}Converter;
 				import {{pkg}}.infrastructure.persistence.entity.{{entity}}PO;
 				import {{pkg}}.infrastructure.persistence.mapper.{{entity}}Mapper;
 
-				import java.util.List;
 				import java.util.Optional;
 
 				import org.springframework.stereotype.Repository;
@@ -918,15 +939,14 @@ final class DddCrudSliceGenerator {
 					}
 
 					@Override
-					public List<{{entity}}> findByQuery({{entity}}Query query) {
+					public PageSlice<{{entity}}> findPage({{entity}}Query query, long current, long size) {
+						Page<{{entity}}PO> page = Page.of(current, size);
 						LambdaQueryWrapper<{{entity}}PO> wrapper = buildWrapper(query);
 						wrapper.orderByDesc({{entity}}PO::getCreateTime);
-						return {{lower}}Mapper.selectList(wrapper).stream().map({{lower}}Converter::toDomain).toList();
-					}
-
-					@Override
-					public long countByQuery({{entity}}Query query) {
-						return {{lower}}Mapper.selectCount(buildWrapper(query));
+						Page<{{entity}}PO> result = {{lower}}Mapper.selectPage(page, wrapper);
+						return PageSlice.of(
+								result.getRecords().stream().map({{lower}}Converter::toDomain).toList(),
+								result.getTotal());
 					}
 
 					private LambdaQueryWrapper<{{entity}}PO> buildWrapper({{entity}}Query query) {
@@ -1107,6 +1127,7 @@ final class DddCrudSliceGenerator {
 				import %s.domain.exception.%sNotFoundException;
 				import %s.domain.model.%s;
 				import %s.domain.query.%sQuery;
+				import %s.domain.query.PageSlice;
 				import %s.domain.repository.%sRepository;
 
 				import java.util.List;
@@ -1139,20 +1160,16 @@ final class DddCrudSliceGenerator {
 					@Override
 					public PageResult<%sSummaryResponse> page(Query%sRequest query) {
 						%sQuery q = new %sQuery(query.keyword(), query.status());
-						long total = repository.countByQuery(q);
-						List<%s> all = repository.findByQuery(q);
-						long from = Math.max(0, (query.current() - 1) * query.size());
-						List<%sSummaryResponse> records = all.stream()
-							.skip(from)
-							.limit(query.size())
+						PageSlice<%s> slice = repository.findPage(q, query.current(), query.size());
+						List<%sSummaryResponse> records = slice.records().stream()
 							.map(assembler::toSummaryResponse)
 							.toList();
-						return PageResult.of(records, total, query.current(), query.size());
+						return PageResult.of(records, slice.total(), query.current(), query.size());
 					}
 
 				}
 				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, pkg, pkg, entity, pkg, entity, pkg, entity,
-				pkg, entity, pkg, entity, pkg, entity, desc, entity, entity, entity, entity, entity, entity, entity,
+				pkg, entity, pkg, entity, pkg, pkg, entity, desc, entity, entity, entity, entity, entity, entity,
 				entity, entity, entity, entity, entity, entity, entity, entity, entity, entity);
 	}
 
