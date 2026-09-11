@@ -133,14 +133,17 @@ class DddSixModuleProjectContributor implements ProjectContributor {
 		Path readme = projectRoot.resolve("README-DDD.md");
 		if (Files.exists(readme)) {
 			String effective = (template == null || template.isBlank()) ? "ddd-enhanced(default)" : template;
+			String prefix = DddCrudSliceGenerator.derivePrefix(svc, packageName);
 			String appendix = "\n\n## CRUD slices\nGenerated template=`" + effective + "` entities=" + entities.size()
 					+ ".\n";
+			appendix += "URL convention: `/{prefix}/v1/{resource}` (prefix=`" + prefix + "`, e.g. `/demo/v1/users`).\n";
+			appendix += "Local smoke without Postgres: `--spring.profiles.active=h2` (see application-h2.yml; add H2 dependency).\n";
 			boolean anySwagger = entities.stream().anyMatch(GenerationRequestAttributes.EntitySpec::swagger)
 					|| entities.stream()
 						.flatMap((e) -> e.fields().stream())
 						.anyMatch(GenerationRequestAttributes.FieldSpec::swagger);
 			if (anySwagger) {
-				appendix += "OpenAPI `@Schema` annotations were emitted on DTOs — add `springdoc-openapi` (or Knife4j) if not already on the classpath.\n";
+				appendix += "OpenAPI `@Tag`/`@Operation`/`@Schema` emitted — springdoc is on the application module classpath.\n";
 			}
 			write(readme, Files.readString(readme) + appendix);
 		}

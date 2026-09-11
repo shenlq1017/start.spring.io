@@ -43,6 +43,13 @@ class DddCrudSliceGeneratorTests {
 	}
 
 	@Test
+	void derivePrefixFromArtifact() {
+		assertThat(DddCrudSliceGenerator.derivePrefix("demo-service", "com.example.demo")).isEqualTo("demo");
+		assertThat(DddCrudSliceGenerator.derivePrefix("order-svc", "com.example.x")).isEqualTo("order");
+		assertThat(DddCrudSliceGenerator.derivePrefix("system", "com.example.user")).isEqualTo("system");
+	}
+
+	@Test
 	void enhancedTemplateGeneratesUserCrudFiles(@TempDir Path projectRoot) throws Exception {
 		GenerationRequestAttributes.EntitySpec user = new GenerationRequestAttributes.EntitySpec("User", "sys_user",
 				"postgresql", "mybatis-plus", "用户", true,
@@ -76,16 +83,47 @@ class DddCrudSliceGeneratorTests {
 				"demo-service-application/src/main/java/com/example/demo/application/service/UserImportExportService.java"))
 			.exists();
 		assertThat(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"))
+			.exists();
+		assertThat(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"))
+			.exists();
+		assertThat(projectRoot.resolve(
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"))
 			.exists();
+		assertThat(projectRoot
+			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/dto/response/PageResult.java"))
+			.exists();
+		assertThat(projectRoot.resolve("demo-service-bootstrap/src/main/resources/application-h2.yml")).exists();
+
 		String controller = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/controller/UserController.java"));
 		assertThat(controller).contains("DeleteMapping").contains("/import").contains("/export");
+		assertThat(controller).contains("@Tag").contains("@Operation").contains("@Parameter");
+		assertThat(controller).doesNotContain("TODO").doesNotContain("UnsupportedOperationException");
+
+		String apiPath = Files.readString(projectRoot
+			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/constant/UserApiPath.java"));
+		assertThat(apiPath).contains("\"/demo/v1/users\"");
+
+		String appService = Files.readString(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"));
+		assertThat(appService).contains("repository.save")
+			.doesNotContain("TODO")
+			.doesNotContain("UnsupportedOperationException");
+
+		String repoImpl = Files.readString(projectRoot.resolve(
+				"demo-service-infrastructure/src/main/java/com/example/demo/infrastructure/persistence/repository/UserRepositoryImpl.java"));
+		assertThat(repoImpl).contains("insert").contains("toDomain").doesNotContain("TODO");
+
 		String createReq = Files.readString(projectRoot.resolve(
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"));
-		assertThat(createReq).contains("@Schema").contains("用户名");
+		assertThat(createReq).contains("@Schema").contains("用户名").contains("@NotBlank");
+
 		assertThat(projectRoot
 			.resolve("demo-service-bootstrap/src/main/java/com/example/demo/DemoServiceApplication.java")).exists();
+		assertThat(projectRoot
+			.resolve("demo-service-feign-client/src/main/java/com/example/demo/feign/UserFeignClient.java")).exists();
 	}
 
 	@Test
