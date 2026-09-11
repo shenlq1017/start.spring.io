@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~17:30 Asia/Shanghai (UTC+8). **P8 on `main`** (local only; no CloudAgent).
+Updated: 2026-09-11 ~21:10 Asia/Shanghai (UTC+8). **deps-i18n + CRUD P0** on `main` (local only; no CloudAgent).
 
 ## Phase summary
 
@@ -36,5 +36,6 @@ Updated: 2026-09-11 ~17:30 Asia/Shanghai (UTC+8). **P8 on `main`** (local only; 
 
 1. `git pull` on Windows clone
 2. `./mvnw clean install -DskipTests` then `java -jar start-site/target/start-site-exec.jar --application.offline=true`
-3. Verify P8: Config|Java tight row; generate 企业DDD增强 + User → `/demo/v1/users`; services have no TODO
-4. MCP: see `mcp/README.md`; Docker: see `docs/deploy-docker.md`
+3. Verify deps panel: **names stay English**, descriptions Chinese (full catalog)
+4. Generate 企业DDD增强 + User → Controller `@RequestMapping(UserApiPath.BASE)`; QueryService uses `PageSlice`/`Page.of` (no hand-rolled skip)
+5. Review: `docs/gen-code-review-zh.md`; MCP/Docker unchanged
