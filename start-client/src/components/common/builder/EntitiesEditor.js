@@ -3,6 +3,7 @@ import '../../../styles/explore.scss'
 import PropTypes from 'prop-types'
 import get from 'lodash/get'
 import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { clearAllBodyScrollLocks, disableBodyScroll } from 'body-scroll-lock'
 
@@ -13,7 +14,38 @@ import {
   createEmptyEntity,
   normalizeField,
 } from '../../utils/Entities'
+import { Radio } from '../form'
 import { t } from '../../../i18n/zh'
+
+const DB_OPTIONS = [
+  { key: 'postgresql', text: 'PostgreSQL' },
+  { key: 'mysql', text: 'MySQL' },
+  { key: 'h2', text: 'H2' },
+]
+
+const ORM_OPTIONS = [
+  { key: 'mybatis-plus', text: 'MyBatis-Plus' },
+  { key: 'jpa', text: 'JPA' },
+]
+
+function DeleteIconButton({ onClick, title }) {
+  return (
+    <button
+      type='button'
+      className='entity-icon-btn entity-remove'
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+    >
+      ×
+    </button>
+  )
+}
+
+DeleteIconButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+}
 
 function FieldRow({ field, onChange, onRemove }) {
   return (
@@ -68,14 +100,7 @@ function FieldRow({ field, onChange, onRemove }) {
         />
         {t('entities.field.swagger')}
       </label>
-      <button
-        type='button'
-        className='entity-link-btn'
-        onClick={onRemove}
-        title={t('entities.field.remove')}
-      >
-        ×
-      </button>
+      <DeleteIconButton onClick={onRemove} title={t('entities.field.remove')} />
     </div>
   )
 }
@@ -138,28 +163,21 @@ function EntityForm({ entity, onChange }) {
             onChange={e => update({ table: e.target.value })}
           />
         </div>
-        <div className='control control-inline'>
+        <div className='control control-inline entity-meta-wide'>
           <label>{t('entities.db')}</label>
-          <select
-            className='entity-select'
-            value={entity.db || 'postgresql'}
-            onChange={e => update({ db: e.target.value })}
-          >
-            <option value='postgresql'>PostgreSQL</option>
-            <option value='mysql'>MySQL</option>
-            <option value='h2'>H2</option>
-          </select>
+          <Radio
+            selected={entity.db || 'postgresql'}
+            options={DB_OPTIONS}
+            onChange={value => update({ db: value })}
+          />
         </div>
-        <div className='control control-inline'>
+        <div className='control control-inline entity-meta-wide'>
           <label>{t('entities.orm')}</label>
-          <select
-            className='entity-select'
-            value={entity.orm || 'mybatis-plus'}
-            onChange={e => update({ orm: e.target.value })}
-          >
-            <option value='mybatis-plus'>MyBatis-Plus</option>
-            <option value='jpa'>JPA</option>
-          </select>
+          <Radio
+            selected={entity.orm || 'mybatis-plus'}
+            options={ORM_OPTIONS}
+            onChange={value => update({ orm: value })}
+          />
         </div>
         <div className='control control-inline entity-meta-wide'>
           <label>{t('entities.description')}</label>
@@ -250,6 +268,16 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined
+    }
+    document.body.classList.toggle('entities-editor-open', !!open)
+    return () => {
+      document.body.classList.remove('entities-editor-open')
+    }
+  }, [open])
+
   const updateAt = (index, next) => {
     const copy = [...list]
     copy[index] = next
@@ -271,11 +299,16 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
 
   const active = list[activeIndex] || list[0]
 
-  return (
+  const overlay = (
     <TransitionGroup component={null}>
       {open && (
         <CSSTransition classNames='explorer' timeout={500}>
-          <div className='explorer entities-editor' role='dialog' aria-modal='true'>
+          <div
+            className='explorer entities-editor'
+            role='dialog'
+            aria-modal='true'
+            aria-label={t('Entities')}
+          >
             <div className='colset-explorer entities-editor-layout'>
               <div className='left'>
                 <div className='head'>
@@ -294,14 +327,10 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
                         >
                           {entity.name || t('entities.unnamed')}
                         </button>
-                        <button
-                          type='button'
-                          className='entity-link-btn entity-remove'
+                        <DeleteIconButton
                           onClick={() => removeAt(index)}
                           title={t('entities.remove')}
-                        >
-                          ×
-                        </button>
+                        />
                       </li>
                     ))}
                   </ul>
@@ -315,10 +344,23 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
                 </div>
               </div>
               <div className='right'>
-                <div className='head'>
+                <div className='head entities-editor-head'>
                   <strong>
                     {(active && active.name) || t('entities.unnamed')}
                   </strong>
+                  <a
+                    href='/#'
+                    className='button entities-back-btn'
+                    onClick={e => {
+                      e.preventDefault()
+                      onClose()
+                    }}
+                  >
+                    <span className='button-content' tabIndex='-1'>
+                      <span>{t('entities.back')}</span>
+                      <span className='secondary desktop-only'>ESC</span>
+                    </span>
+                  </a>
                 </div>
                 <div className='explorer-content' ref={scrollRef}>
                   {active ? (
@@ -350,6 +392,11 @@ function EntitiesEditor({ open, onClose, entities, onChange, initialIndex }) {
       )}
     </TransitionGroup>
   )
+
+  if (typeof document === 'undefined') {
+    return null
+  }
+  return createPortal(overlay, document.body)
 }
 
 EntitiesEditor.propTypes = {

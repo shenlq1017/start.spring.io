@@ -57,6 +57,7 @@ const zh = {
   'entities.expand': '展开',
   'entities.edit': '编辑',
   'entities.done': '完成',
+  'entities.back': '返回',
   'boot.unsupported': 'Spring Boot {value} 不受支持，请选择有效版本。',
   'deps.search.placeholder': 'Web、Security、JPA、Actuator、Devtools…',
   'deps.multi.help': '按住 {symb} 可多选添加',

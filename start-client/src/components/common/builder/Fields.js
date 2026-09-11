@@ -162,27 +162,18 @@ function Fields({
               />
             </Control>
 
-            <div
-              className={`fields-slot fields-slot-template${
-                showTemplate ? '' : ' is-reserved'
-              }`}
-              aria-hidden={!showTemplate}
-            >
-              {showTemplate ? (
-                <Control text={t('Template')} className='control-template'>
-                  <Radio
-                    name='template'
-                    selected={
-                      normalizeTemplate(architecture, template, entities)
-                    }
-                    options={templateOptionsFor(architecture)}
-                    onChange={onTemplateChange}
-                  />
-                </Control>
-              ) : (
-                <div className='fields-slot-spacer' />
-              )}
-            </div>
+            {showTemplate ? (
+              <Control text={t('Template')} className='control-template'>
+                <Radio
+                  name='template'
+                  selected={
+                    normalizeTemplate(architecture, template, entities)
+                  }
+                  options={templateOptionsFor(architecture)}
+                  onChange={onTemplateChange}
+                />
+              </Control>
+            ) : null}
 
             <Control text={t('Project Metadata')} className='control-metadata'>
               <FieldInput
@@ -251,23 +242,14 @@ function Fields({
               </div>
             </Control>
 
-            <div
-              className={`fields-slot fields-slot-entities${
-                showEntities ? '' : ' is-reserved'
-              }`}
-              aria-hidden={!showEntities}
-            >
-              {showEntities ? (
-                <Control text={t('Entities')} className='control-entities'>
-                  <EntitiesPanel
-                    entities={entities}
-                    onChange={next => update({ entities: next })}
-                  />
-                </Control>
-              ) : (
-                <div className='fields-slot-spacer fields-slot-spacer-entities' />
-              )}
-            </div>
+            {showEntities ? (
+              <Control text={t('Entities')} className='control-entities'>
+                <EntitiesPanel
+                  entities={entities}
+                  onChange={next => update({ entities: next })}
+                />
+              </Control>
+            ) : null}
           </div>
         </div>
         <div className='right'>

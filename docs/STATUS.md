@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~16:45 Asia/Shanghai (UTC+8). **P4 on `main`** (local only; no CloudAgent).
+Updated: 2026-09-11 ~17:00 Asia/Shanghai (UTC+8). **P5 on `main`** (local only; no CloudAgent).
 
 ## Phase summary
 
@@ -12,6 +12,7 @@ Updated: 2026-09-11 ~16:45 Asia/Shanghai (UTC+8). **P4 on `main`** (local only; 
 | **P1/P2** | Template kit + multi-entity CRUD | Done | `docs/phase-p1-notes.md` |
 | **P3** | Deps i18n, layout, Entities UX, gen gaps | Done | `docs/phase-p3-notes.md` |
 | **P4** | Divider/widths, jitter, metadata density, packaging=jar, Entities Explore-editor | **Done** | `docs/phase-p4-notes.md` |
+| **P5** | Entities polish, home divider left ~55%, Control alignment, no single-app spacer hole | **Done** | `docs/phase-p5-notes.md` |
 
 ## Project Structure markers
 
@@ -24,5 +25,6 @@ Updated: 2026-09-11 ~16:45 Asia/Shanghai (UTC+8). **P4 on `main`** (local only; 
 
 1. `git pull` on Windows clone
 2. `./mvnw clean install -DskipTests` then `java -jar start-site/target/start-site-exec.jar --application.offline=true`
-3. Verify: Architecture switch (no jump) → Template → Metadata (Config|Java row, no Packaging) → Entities list → Edit overlay → Explore → GENERATE
-4. Confirm request always has `packaging=jar`; zip still has bootstrap `*Application.java` + entity controllers for `ddd-enhanced`
+3. Verify: divider ~mid-left; metadata label/value aligned; single-app has no blank hole under fields
+4. Entities list: 编辑/移除 tight to name; open editor → no 添加依赖 floater; 返回/ESC; green checkboxes; rounded panes
+5. Confirm `packaging=jar`; Explore debounce + entities JSON still work
