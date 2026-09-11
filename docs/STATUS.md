@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~14:50 Asia/Shanghai (UTC+8). No CloudAgent / no git push / no commit.
+Updated: 2026-09-11 ~15:00 Asia/Shanghai (UTC+8). **P1/P2 on `main` as `c628317`** (local only; no CloudAgent).
 
 ## Phase summary
 
@@ -42,12 +42,12 @@ Earlier Phase 4 (port 18080): single-module + `ddd-six-module` also **PASS** (se
 - Includes `index.html`, assets, `404.html` (= index for SPA-ish routing), and `README.md`.
 - **UI-only** — API/download needs Java `start-site` backend.
 
-## Deferred human steps (not done in sandbox)
+## Next for the user (Windows)
 
-1. **Login / `gh` auth** on a user machine.
-2. **Git commit + push** of fork changes (sandbox preferred no commit).
-3. **Enable GitHub Pages** from `docs/gh-pages-preview/` or a `gh-pages` branch.
-4. **Verify** published UI + (optionally) wire/proxy to a live Initializr API for zip generation.
+1. `git pull` on `C:\project\develop\start.spring.io`
+2. `./mvnw clean install -DskipTests` then `java -jar start-site/target/start-site-exec.jar --application.offline=true`
+3. **Full verify** now: Architecture → Template → Entities → Explore → GENERATE (enhanced vs standard)
+4. Optional: refresh GH Pages static bundle from a fresh `start-client` build
 
 ## Quick verify (Phase B unit + optional server)
 
