@@ -30,6 +30,9 @@ body {
       .st0 {
         fill: $light-primary;
       }
+      .st-word {
+        fill: $light-primary;
+      }
     }
   }
   h2 {
@@ -136,20 +139,67 @@ body {
 // Config | Java on one row inside metadata
 .colset-meta-row {
   display: flex;
-  gap: 0.5rem;
-  > .left,
+  gap: 0.35rem;
+  align-items: center;
+  > .left {
+    flex: 0 1 40%;
+    max-width: 42%;
+    padding-right: 0.35rem !important;
+    min-width: 0;
+  }
   > .right {
-    flex: 1 1 50%;
-    max-width: 50%;
-    padding-right: 0.5rem !important;
+    flex: 1 1 58%;
+    max-width: 60%;
+    padding-right: 0.25rem !important;
+    min-width: 0;
   }
   .control-inline {
     align-items: center;
     label {
-      flex: 96px 0;
-      min-width: 88px;
+      flex: 72px 0;
+      min-width: 64px;
+      max-width: 72px;
       text-align: right;
       color: $light-color;
+    }
+  }
+  // Java versions are short numerics — keep one line, avoid P6 min-width wrap
+  .control-java {
+    .group-radio {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0;
+      min-width: 0;
+    }
+    .radio {
+      flex: 0 0 auto;
+      min-width: 0;
+      margin-right: 0.45rem;
+      .radio-content {
+        padding: 4px 4px 4px 24px;
+        font-size: 13px;
+      }
+      .caret {
+        top: 5px;
+        left: 4px;
+        width: 11px;
+        height: 11px;
+      }
+    }
+  }
+  .control-config {
+    .group-radio {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .radio {
+      min-width: 0;
+      margin-right: 0.65rem;
+      .radio-content {
+        padding: 4px 4px 4px 26px;
+        font-size: 13px;
+      }
     }
   }
 }
@@ -161,6 +211,9 @@ body {
     > .right {
       flex: none;
       max-width: 100%;
+    }
+    .control-java .group-radio {
+      flex-wrap: nowrap;
     }
   }
 }
@@ -715,14 +768,14 @@ button.button.primary {
   }
 }
 
-// P6 — radio selection must not reflow row width (bold was shaking columns)
+// P6/P7 — radio selection must not reflow row width (bold was shaking columns)
 .group-radio {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   .radio {
     flex: 0 0 auto;
-    min-width: 4.5rem;
+    min-width: 3.25rem; // P7: less aggressive than 4.5rem (Java 4-up fit)
     white-space: nowrap;
     font-weight: 500; // same weight selected/unselected — no bold jitter
     box-sizing: border-box;
@@ -741,6 +794,20 @@ button.button.primary {
 
 .control-boot .group-radio .radio {
   min-width: 5.25rem;
+}
+
+// Project / Language / Config short labels
+.colset-project-lang .group-radio .radio,
+.control-config .group-radio .radio {
+  min-width: 4.25rem;
+}
+
+// Java numeric versions — fixed compact width, never wrap
+.control-java .group-radio {
+  flex-wrap: nowrap !important;
+  .radio {
+    min-width: 2.5rem;
+  }
 }
 
 .control {
@@ -1321,5 +1388,150 @@ body.dark {
         color: $dark-primary;
       }
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// P7 — thorough dark mode pass (beats light hardcodes from _main / earlier modern)
+// ---------------------------------------------------------------------------
+body.dark {
+  #header {
+    h1.logo a {
+      color: $dark-color;
+      .st0 {
+        fill: $dark-primary; // hexagon
+      }
+      .st1 {
+        fill: #f8fafc; // leaf on green hex — light, not washed white slab
+      }
+      .st-word {
+        fill: $dark-color; // "spring" wordmark readable on dark
+      }
+    }
+  }
+
+  // Section labels (Project / Language / Boot / Arch / Template / Dependencies)
+  .control > .label,
+  .control .label,
+  .dependency-header .label,
+  .label-2 {
+    color: $dark-color;
+  }
+
+  // Unselected + selected radio text & caret (all groups)
+  .radio,
+  .group-radio .radio,
+  .control-inline .radio,
+  .control-metadata .radio,
+  .control-architecture .radio,
+  .control-template .radio,
+  .control-java .radio,
+  .control-config .radio,
+  .colset-project-lang .radio {
+    color: $dark-muted-foreground;
+    .caret {
+      background: $dark-background;
+      border-color: $dark-muted-foreground;
+    }
+    &:hover .caret {
+      border-color: $dark-primary;
+    }
+    &.checked {
+      color: $dark-primary;
+      .caret {
+        background: $dark-primary;
+        border-color: $dark-primary;
+      }
+    }
+  }
+
+  // Metadata / inline field labels
+  .control-inline label,
+  .control-metadata .control-inline label,
+  .colset-meta-row .control-inline label {
+    color: $dark-muted-foreground;
+  }
+
+  // Inputs — visible underline on dark bg (#0f172a light-color border was invisible)
+  .input,
+  .control-inline input.input,
+  .control-metadata .input {
+    background: $dark-background;
+    color: $dark-color;
+    border: 0;
+    border-bottom: 2px solid $dark-border;
+    box-shadow: none;
+    &:focus {
+      border-bottom-color: $dark-primary;
+      box-shadow: 0 2px 0 0 rgba($dark-primary, 0.35);
+    }
+    &::placeholder {
+      color: $dark-muted-foreground;
+    }
+  }
+
+  // Entity list primary + secondary
+  .entity-chip {
+    color: $dark-color;
+  }
+  .entity-chip-name {
+    color: $dark-color;
+  }
+  .entity-summary-meta {
+    color: $dark-muted-foreground;
+    opacity: 1;
+  }
+
+  // Dependencies panel
+  .colset-main > .right {
+    .dependency-header {
+      border-bottom-color: $dark-border;
+    }
+    .no-dependency {
+      color: $dark-muted-foreground;
+      background: $dark-muted;
+      border-color: $dark-border;
+    }
+    ul.dependencies-list li {
+      border-bottom-color: $dark-border;
+      div {
+        color: $dark-color;
+        strong {
+          color: $dark-color;
+        }
+        span.description {
+          color: $dark-muted-foreground;
+        }
+      }
+    }
+  }
+
+  // Dividers / columns
+  hr.divider,
+  .dependency-header,
+  .entity-chip-row {
+    border-color: $dark-border;
+  }
+  .colset-main {
+    background: linear-gradient($dark-border, $dark-border) no-repeat center/1px
+      100%;
+  }
+
+  // Buttons already handled earlier; ensure outline buttons stay readable
+  a.button:not(.primary),
+  button.button:not(.primary) {
+    border-color: $dark-border;
+    color: $dark-color;
+    background: $dark-background-secondary;
+  }
+
+  // Explore / entities overlays inherit body.dark color
+  .overlay {
+    background: rgba($dark-background, 0.92);
+  }
+  .explorer,
+  .explorer.entities-editor {
+    background: $dark-background;
+    color: $dark-color;
   }
 }

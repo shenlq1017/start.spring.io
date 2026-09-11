@@ -10,7 +10,10 @@ import {
   isArchitectureMarker,
 } from '../utils/Architecture'
 import { defaultEntities } from '../utils/Entities'
-import { normalizeTemplate } from '../utils/Template'
+import {
+  applyTemplateKitDependencies,
+  normalizeTemplate,
+} from '../utils/Template'
 
 export const defaultInitializrContext = {
   values: {
@@ -56,6 +59,18 @@ const sanitizeArchitecture = values => {
     ...values,
     architecture,
     dependencies: deps.filter(id => !isArchitectureMarker(id)),
+  }
+}
+
+
+const withTemplateKit = values => {
+  const template = get(values, 'template') || ''
+  return {
+    ...values,
+    dependencies: applyTemplateKitDependencies(
+      get(values, 'dependencies', []),
+      template
+    ),
   }
 }
 
@@ -138,8 +153,9 @@ export function reducer(state, action) {
   switch (action.type) {
     case 'COMPLETE': {
       const json = get(action, 'payload')
-      const values = getPersistedOrDefault(json)
+      let values = getPersistedOrDefault(json)
       values.meta.packaging = 'jar'
+      values = withTemplateKit(values)
       return {
         values,
         share: getShareUrl(values),
@@ -194,6 +210,15 @@ export function reducer(state, action) {
           values.entities = defaultEntities()
         }
       }
+      if (
+        get(changes, 'architecture') ||
+        get(changes, 'template') !== undefined
+      ) {
+        values.dependencies = applyTemplateKitDependencies(
+          get(values, 'dependencies', []),
+          values.template
+        )
+      }
       return { ...state, values, share: getShareUrl(values), errors }
     }
     case 'LOAD': {
@@ -204,7 +229,7 @@ export function reducer(state, action) {
         params,
         lists
       )
-      const values = sanitizeArchitecture(parsed)
+      let values = sanitizeArchitecture(parsed)
       if (!values.meta) {
         values.meta = {}
       }
@@ -217,6 +242,7 @@ export function reducer(state, action) {
         values.template,
         values.entities
       )
+      values = withTemplateKit(values)
       return { ...state, values, errors, warnings, share: getShareUrl(values) }
     }
     case 'ADD_DEPENDENCY': {

@@ -220,6 +220,7 @@ function Fields({
                 <div className='left'>
                   <FieldRadio
                     id='input-configurationFileFormat'
+                    className='control-config'
                     value={get(values, 'meta.configurationFileFormat')}
                     text={t('Configuration')}
                     options={get(config, 'lists.meta.configurationFileFormat')}
@@ -231,6 +232,7 @@ function Fields({
                 <div className='right'>
                   <FieldRadio
                     id='input-java'
+                    className='control-java'
                     value={get(values, 'meta.java')}
                     text={t('Java')}
                     options={get(config, 'lists.meta.java')}

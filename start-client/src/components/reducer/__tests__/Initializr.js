@@ -279,3 +279,47 @@ describe('CLEAR_WARNINGS action', () => {
     expect(Object.keys(get(result, 'warnings')).length).toBe(0)
   })
 })
+
+describe('UPDATE template kit deps', () => {
+  it('should select kit deps when switching to ddd-enhanced', () => {
+    const result = reducer(state, {
+      type: 'UPDATE',
+      payload: {
+        architecture: 'arch-ddd-service',
+        template: 'ddd-enhanced',
+      },
+    })
+    const deps = get(result, 'values.dependencies')
+    expect(deps).toContain('web')
+    expect(deps).toContain('mybatis-plus')
+    expect(deps).toContain('postgresql')
+    expect(deps).toContain('knife4j')
+    expect(get(result, 'values.template')).toBe('ddd-enhanced')
+  })
+
+  it('should replace kit deps when switching template away', () => {
+    let result = reducer(state, {
+      type: 'UPDATE',
+      payload: {
+        architecture: 'arch-ddd-service',
+        template: 'ddd-enhanced',
+      },
+    })
+    result = reducer(result, {
+      type: 'ADD_DEPENDENCY',
+      payload: { id: 'r2dbc' },
+    })
+    result = reducer(result, {
+      type: 'UPDATE',
+      payload: {
+        architecture: 'arch-single',
+        template: '',
+      },
+    })
+    const deps = get(result, 'values.dependencies')
+    expect(deps).toContain('r2dbc')
+    expect(deps).not.toContain('mybatis-plus')
+    expect(deps).not.toContain('web')
+  })
+})
+

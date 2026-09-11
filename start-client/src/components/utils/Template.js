@@ -15,6 +15,83 @@ export const PLATFORM_TEMPLATE_OPTIONS = [
   { key: TEMPLATE_PLATFORM_ENHANCED, text: '平台增强·含示例服务' },
 ]
 
+/**
+ * Sensible dependency kits shown as selected in the Dependencies panel
+ * when a template is active. Architecture markers (ddd-six-module /
+ * platform-monorepo) stay separate — applied at share/generate time.
+ */
+export const TEMPLATE_KIT_DEPS = {
+  [TEMPLATE_DDD_STANDARD]: [
+    'web',
+    'validation',
+    'mybatis-plus',
+    'postgresql',
+    'flyway',
+    'knife4j',
+  ],
+  [TEMPLATE_DDD_ENHANCED]: [
+    'web',
+    'validation',
+    'mybatis-plus',
+    'postgresql',
+    'flyway',
+    'knife4j',
+  ],
+  [TEMPLATE_PLATFORM_STANDARD]: [
+    'web',
+    'validation',
+    'mybatis-plus',
+    'postgresql',
+    'knife4j',
+  ],
+  [TEMPLATE_PLATFORM_ENHANCED]: [
+    'web',
+    'validation',
+    'mybatis-plus',
+    'postgresql',
+    'flyway',
+    'knife4j',
+  ],
+}
+
+/** Flat set of every id that belongs to any template kit. */
+export const ALL_TEMPLATE_KIT_DEP_IDS = Array.from(
+  new Set(
+    Object.keys(TEMPLATE_KIT_DEPS).reduce(
+      (acc, key) => acc.concat(TEMPLATE_KIT_DEPS[key]),
+      []
+    )
+  )
+)
+
+export function kitDepsFor(template) {
+  if (!template || !TEMPLATE_KIT_DEPS[template]) {
+    return []
+  }
+  return [...TEMPLATE_KIT_DEPS[template]]
+}
+
+export function isTemplateKitDep(id) {
+  return ALL_TEMPLATE_KIT_DEP_IDS.indexOf(id) > -1
+}
+
+/**
+ * Strip previous kit deps, keep user extras, then ensure the active
+ * template's kit deps are present (no duplicates). Re-apply on every
+ * architecture/template change so the right panel stays in sync.
+ */
+export function applyTemplateKitDependencies(dependencies = [], template = '') {
+  const base = (dependencies || []).filter(id => !isTemplateKitDep(id))
+  const kit = kitDepsFor(template)
+  const merged = [...base]
+  kit.forEach(id => {
+    if (merged.indexOf(id) === -1) {
+      merged.push(id)
+    }
+  })
+  return merged
+}
+
 /** Default template for an architecture + entities presence. */
 export function defaultTemplateFor(architecture, entities = []) {
   if (architecture === 'arch-ddd-service') {

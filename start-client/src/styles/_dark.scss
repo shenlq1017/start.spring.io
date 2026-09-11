@@ -10,6 +10,12 @@ body.dark {
         .st0 {
           fill: $dark-primary;
         }
+        .st-word {
+          fill: $dark-color;
+        }
+        .st1 {
+          fill: #f8fafc;
+        }
       }
     }
   }
@@ -42,12 +48,13 @@ body.dark {
     border-color: $dark-border;
   }
   .radio {
-    color: $dark-color;
+    color: $dark-muted-foreground;
     .caret {
       background: $dark-background;
-      border-color: $dark-color;
+      border-color: $dark-muted-foreground;
     }
     &:hover {
+      color: $dark-color;
       .caret {
         border-color: $dark-primary;
       }
@@ -110,10 +117,12 @@ body.dark {
   }
   .input {
     background: $dark-background;
-    border-color: $dark-color;
+    border-color: $dark-border;
+    border-bottom-color: $dark-border;
     color: $dark-color;
     &:focus {
       border-color: $dark-primary;
+      border-bottom-color: $dark-primary;
     }
     &::selection {
       color: $dark-color;
