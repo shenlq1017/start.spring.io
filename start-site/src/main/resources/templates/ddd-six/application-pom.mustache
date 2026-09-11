@@ -10,7 +10,7 @@
     </parent>
     <artifactId>{{svc}}-application</artifactId>
     <name>{{svc}}-application</name>
-    <description>Controllers, application services, assemblers (no Spring Boot main)</description>
+    <description>Controllers, application services, assemblers (query side may use ReadMapper)</description>
 
     <dependencies>
         <dependency>
@@ -20,6 +20,10 @@
         <dependency>
             <groupId>{{groupId}}</groupId>
             <artifactId>{{svc}}-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>{{groupId}}</groupId>
+            <artifactId>{{svc}}-infrastructure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -34,6 +38,14 @@
             <artifactId>spring-tx</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
@@ -41,6 +53,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

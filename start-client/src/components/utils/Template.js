@@ -36,6 +36,7 @@ export const TEMPLATE_KIT_DEPS = {
     'postgresql',
     'flyway',
     'knife4j',
+    'easyexcel',
   ],
   [TEMPLATE_PLATFORM_STANDARD]: [
     'web',

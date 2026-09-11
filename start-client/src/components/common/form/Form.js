@@ -3,7 +3,14 @@ import React from 'react'
 
 function Form({ onSubmit, children }) {
   return (
-    <form className='form' onSubmit={onSubmit} autoComplete='off'>
+    <form
+      className='form'
+      onSubmit={e => {
+        e.preventDefault()
+        onSubmit(e)
+      }}
+      autoComplete='off'
+    >
       <input
         style={{ display: 'none' }}
         type='text'

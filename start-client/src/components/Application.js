@@ -139,7 +139,8 @@ export default function Application() {
     }
   }
 
-  // Debounced Explore refresh when architecture / template / entities change
+  // Debounced Explore refresh when ANY project-defining field changes
+  // (must match Generate / buildStarterQuery inputs for zip parity)
   const architecture = get(values, 'architecture')
   const template = get(values, 'template')
   const entities = get(values, 'entities')
@@ -155,7 +156,20 @@ export default function Application() {
       apis: e.apis,
     }))
   )
-  const exploreSignature = `${architecture}|${template || ''}|${entitiesSig}`
+  const depsSig = JSON.stringify(get(values, 'dependencies') || [])
+  const metaSig = JSON.stringify({
+    project: get(values, 'project'),
+    language: get(values, 'language'),
+    boot: get(values, 'boot'),
+    group: get(values, 'meta.group'),
+    artifact: get(values, 'meta.artifact'),
+    name: get(values, 'meta.name'),
+    description: get(values, 'meta.description'),
+    packageName: get(values, 'meta.packageName'),
+    java: get(values, 'meta.java'),
+    configurationFileFormat: get(values, 'meta.configurationFileFormat'),
+  })
+  const exploreSignature = `${architecture}|${template || ''}|${entitiesSig}|${depsSig}|${metaSig}`
   const prevExploreSignature = useRef(exploreSignature)
   useEffect(() => {
     if (!exploreOpen || !complete) {

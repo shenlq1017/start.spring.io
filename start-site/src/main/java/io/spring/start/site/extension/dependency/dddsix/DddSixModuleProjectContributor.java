@@ -137,13 +137,23 @@ class DddSixModuleProjectContributor implements ProjectContributor {
 			String appendix = "\n\n## CRUD slices\nGenerated template=`" + effective + "` entities=" + entities.size()
 					+ ".\n";
 			appendix += "URL convention: `/{prefix}/v1/{resource}` (prefix=`" + prefix + "`, e.g. `/demo/v1/users`).\n";
-			appendix += "Local smoke without Postgres: `--spring.profiles.active=h2` (see application-h2.yml; add H2 dependency).\n";
+			appendix += "Local smoke without Postgres: `--spring.profiles.active=h2` (Flyway off; schema-h2.sql). Default profile = PostgreSQL + Flyway.\n";
+			appendix += "IDs: Snowflake (`contract.common.id.SnowflakeIdGenerator`); soft-delete BOOLEAN + `@TableLogic`.\n";
+			appendix += "PageResult: `contract.common.page.PageResult`. Read path: `*ReadMapper` + XML (CQRS).\n";
+			appendix += "Jackson 3: use `tools.jackson.*` for JSONB handlers; ArchUnit bans `com.fasterxml.jackson`.\n";
 			boolean anySwagger = entities.stream().anyMatch(GenerationRequestAttributes.EntitySpec::swagger)
 					|| entities.stream()
 						.flatMap((e) -> e.fields().stream())
 						.anyMatch(GenerationRequestAttributes.FieldSpec::swagger);
 			if (anySwagger) {
 				appendix += "OpenAPI `@Tag`/`@Operation`/`@Schema` emitted — springdoc is on the application module classpath.\n";
+			}
+			boolean anyIe = entities.stream().anyMatch((e) -> e.apis().importApi() || e.apis().exportApi());
+			if (anyIe) {
+				appendix += "Import/Export: EasyExcel skeleton generated (not Map stub).\n";
+			}
+			else {
+				appendix += "Import/Export APIs off — no EasyExcel service generated.\n";
 			}
 			write(readme, Files.readString(readme) + appendix);
 		}
@@ -184,6 +194,8 @@ class DddSixModuleProjectContributor implements ProjectContributor {
 		}
 		List<Pkg> packages = List.of(
 				new Pkg("contract", "contract", "API contracts and DTOs (zero Spring runtime dependencies)"),
+				new Pkg("contract", "contract.common.page", "Module-local PageResult (skill common-core spirit)"),
+				new Pkg("contract", "contract.common.id", "SnowflakeIdGenerator"),
 				new Pkg("contract", "contract.dto.request", "Request DTOs"),
 				new Pkg("contract", "contract.dto.response", "Response DTOs"),
 				new Pkg("contract", "contract.constant", "API path and service name constants"),

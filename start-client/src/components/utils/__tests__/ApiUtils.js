@@ -2,6 +2,8 @@ import get from 'lodash/get'
 
 import MockClient from '../../../../dev/api.mock.json'
 import {
+  buildStarterQuery,
+  buildTemplateEntitiesQuery,
   getDefaultValues,
   getLists,
   getProject,
@@ -410,5 +412,91 @@ describe('getProject', () => {
     expect(fetch.mock.calls[0][0]).toEqual(
       'http://demo/starter.zip?type=foo1&language=foo2&bootVersion=foo3&baseDir=foo7&groupId=foo6&artifactId=foo7&name=foo7&description=Demo%20project%20for%20Spring%20Boot&packageName=foo10&packaging=jar&javaVersion=foo5&configurationFileFormat=foo11'
     )
+  })
+})
+
+describe('Explore/Generate query parity', () => {
+  const dddValues = {
+    project: 'maven-project',
+    language: 'java',
+    boot: '4.1.1',
+    architecture: 'arch-ddd-service',
+    template: 'ddd-enhanced',
+    entities: [
+      {
+        name: 'User',
+        table: 'sys_user',
+        db: 'postgresql',
+        orm: 'mybatis-plus',
+        description: '用户',
+        swagger: true,
+        fields: [
+          {
+            name: 'username',
+            type: 'String',
+            required: true,
+            unique: true,
+            description: '用户名',
+            swagger: true,
+          },
+        ],
+        apis: {
+          create: true,
+          detail: true,
+          page: true,
+          update: true,
+          delete: true,
+          import: false,
+          export: false,
+        },
+      },
+    ],
+    meta: {
+      packaging: 'jar',
+      java: '21',
+      group: 'com.example',
+      artifact: 'demo-service',
+      name: 'demo-service',
+      description: 'Demo',
+      packageName: 'com.example.demo',
+      configurationFileFormat: 'config-yaml',
+    },
+    dependencies: ['web', 'validation', 'mybatis-plus'],
+  }
+
+  it('buildStarterQuery includes template, entities, and architecture marker', () => {
+    const q = buildStarterQuery(dddValues, [
+      { id: 'web' },
+      { id: 'validation' },
+      { id: 'mybatis-plus' },
+      { id: 'ddd-six-module' },
+    ])
+    expect(q).toContain('template=ddd-enhanced')
+    expect(q).toContain('entities=')
+    expect(q).toContain('ddd-six-module')
+    expect(q).toContain('User')
+  })
+
+  it('getShareUrl and buildTemplateEntitiesQuery share template/entities', () => {
+    const share = getShareUrl(dddValues)
+    const extras = buildTemplateEntitiesQuery(dddValues)
+    expect(share).toContain('template=ddd-enhanced')
+    expect(extras).toContain('template=ddd-enhanced')
+    expect(share).toContain('entities=')
+    expect(extras).toContain('entities=')
+  })
+
+  it('getProject uses the same query as buildStarterQuery', () => {
+    fetch.resetMocks()
+    fetch.mockResponseOnce(JSON.stringify({}))
+    const deps = [
+      { id: 'web' },
+      { id: 'validation' },
+      { id: 'mybatis-plus' },
+      { id: 'ddd-six-module' },
+    ]
+    getProject('http://demo/starter.zip', dddValues, deps)
+    const expected = `http://demo/starter.zip?${buildStarterQuery(dddValues, deps)}`
+    expect(fetch.mock.calls[0][0]).toEqual(expected)
   })
 })

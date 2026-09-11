@@ -98,11 +98,14 @@ final class DddCrudSliceGenerator {
 
 	private static void writeShared(Path root, String svc, String pkg, String pkgPath, EntitySpec first)
 			throws IOException {
+		// Module-local "common" under contract (no platform common-core required)
 		String cBase = svc + "-contract/src/main/java/" + pkgPath + "/contract";
-		write(root.resolve(cBase + "/dto/response/PageResult.java"), pageResult(pkg));
+		write(root.resolve(cBase + "/common/page/PageResult.java"), pageResult(pkg));
+		write(root.resolve(cBase + "/common/id/SnowflakeIdGenerator.java"), snowflakeIdGenerator(pkg));
 
 		String dShared = svc + "-domain/src/main/java/" + pkgPath + "/domain";
 		write(root.resolve(dShared + "/query/PageSlice.java"), pageSlice(pkg));
+		write(root.resolve(dShared + "/exception/BusinessException.java"), businessException(pkg));
 
 		String aBase = svc + "-application/src/main/java/" + pkgPath + "/application";
 		write(root.resolve(aBase + "/advice/GlobalExceptionHandler.java"), globalAdvice(pkg, first));
@@ -113,7 +116,8 @@ final class DddCrudSliceGenerator {
 		Path bootstrapRes = root.resolve(svc + "-bootstrap/src/main/resources");
 		Files.createDirectories(bootstrapRes);
 		write(bootstrapRes.resolve("application-h2.yml"), h2ProfileYml());
-		write(bootstrapRes.resolve("schema-h2.sql"), "-- H2 smoke schema (Flyway disabled on h2 profile)\n");
+		write(bootstrapRes.resolve("schema-h2.sql"),
+				"-- H2 smoke schema (Flyway disabled on h2 profile; BOOLEAN/TIMESTAMP mapped from PG)\n");
 	}
 
 	private static void writeEntitySlice(Path root, String svc, String pkg, String pkgPath, String prefix, EntitySpec e,
@@ -131,7 +135,10 @@ final class DddCrudSliceGenerator {
 		write(root.resolve(svc + "-bootstrap/src/main/resources/db/migration/V1__" + String.format("%02d", flywayIdx)
 				+ "_create_" + table + ".sql"), ddl);
 		Path h2Schema = root.resolve(svc + "-bootstrap/src/main/resources/schema-h2.sql");
-		String h2Ddl = ddl.replace("TIMESTAMPTZ", "TIMESTAMP").replace("NOW()", "CURRENT_TIMESTAMP");
+		String h2Ddl = ddl.replace("TIMESTAMPTZ", "TIMESTAMP")
+			.replace("NOW()", "CURRENT_TIMESTAMP")
+			.replace("DEFAULT FALSE", "DEFAULT FALSE")
+			.replace("DEFAULT TRUE", "DEFAULT TRUE");
 		Files.writeString(h2Schema, h2Ddl + "\n", StandardCharsets.UTF_8, StandardOpenOption.CREATE,
 				StandardOpenOption.APPEND);
 
@@ -166,6 +173,9 @@ final class DddCrudSliceGenerator {
 		String iBase = svc + "-infrastructure/src/main/java/" + pkgPath + "/infrastructure";
 		write(root.resolve(iBase + "/persistence/entity/" + entity + "PO.java"), po(pkg, entity, table, fields));
 		write(root.resolve(iBase + "/persistence/mapper/" + entity + "Mapper.java"), mapper(pkg, entity));
+		write(root.resolve(iBase + "/persistence/mapper/" + entity + "ReadMapper.java"), readMapper(pkg, entity));
+		write(root.resolve(svc + "-infrastructure/src/main/resources/mapper/" + entity + "ReadMapper.xml"),
+				readMapperXml(pkg, entity, table, fields));
 		write(root.resolve(iBase + "/persistence/converter/" + entity + "Converter.java"),
 				converter(pkg, entity, fields));
 		write(root.resolve(iBase + "/persistence/repository/" + entity + "RepositoryImpl.java"),
@@ -182,7 +192,11 @@ final class DddCrudSliceGenerator {
 				controller(pkg, entity, lower, desc, apis, swagger));
 		if (apis.importApi() || apis.exportApi()) {
 			write(root.resolve(aBase + "/service/" + entity + "ImportExportService.java"),
-					importExportService(pkg, entity, desc, apis));
+					importExportService(pkg, entity, desc, apis, fields));
+		}
+		if (apis.create()) {
+			write(root.resolve(svc + "-application/src/test/java/" + pkgPath + "/application/service/" + entity
+					+ "ApplicationServiceTest.java"), applicationServiceTest(pkg, entity, lower, fields));
 		}
 	}
 
@@ -190,18 +204,104 @@ final class DddCrudSliceGenerator {
 
 	private static String pageResult(String pkg) {
 		return """
-				package %s.contract.dto.response;
+				package %s.contract.common.page;
 
 				import java.util.List;
 
 				/**
-				 * Unified page payload (no ApiResponse/R wrapper — Problem Details for errors).
+				 * Unified page payload (module-local common under contract — no platform common-core).
+				 * Controllers must return this type; never expose MyBatis-Plus IPage.
 				 */
 				public record PageResult<T>(List<T> records, long total, long current, long size) {
 
 					public static <T> PageResult<T> of(List<T> records, long total, long current, long size) {
 						return new PageResult<>(records, total, current, size);
 					}
+
+				}
+				""".formatted(pkg);
+	}
+
+	private static String snowflakeIdGenerator(String pkg) {
+		return """
+				package %s.contract.common.id;
+
+				import java.util.concurrent.atomic.AtomicLong;
+
+				/**
+				 * Snowflake ID generator (no synchronized — virtual-thread friendly).
+				 * Production: assign workerId via instance index; default workerId=1 for single-node.
+				 */
+				public final class SnowflakeIdGenerator {
+
+					private static final long EPOCH = 1700000000000L;
+					private static final long SEQUENCE_BITS = 12L;
+					private static final long SEQUENCE_MASK = ~(-1L << SEQUENCE_BITS);
+
+					private final long workerId;
+					private final AtomicLong lastTimestamp = new AtomicLong(-1L);
+					private final AtomicLong sequence = new AtomicLong(0L);
+
+					public SnowflakeIdGenerator() {
+						this(1L);
+					}
+
+					public SnowflakeIdGenerator(long workerId) {
+						this.workerId = workerId & 0x1FL;
+					}
+
+					public String nextId() {
+						long timestamp = System.currentTimeMillis();
+						while (true) {
+							long last = lastTimestamp.get();
+							long seq;
+							if (timestamp == last) {
+								seq = sequence.incrementAndGet() & SEQUENCE_MASK;
+								if (seq == 0L) {
+									timestamp = nextMillis(last);
+									continue;
+								}
+							}
+							else {
+								sequence.set(0L);
+								seq = 0L;
+								if (!lastTimestamp.compareAndSet(last, timestamp)) {
+									continue;
+								}
+							}
+							long id = ((timestamp - EPOCH) << 22) | (workerId << 12) | seq;
+							return String.valueOf(id);
+						}
+					}
+
+					private long nextMillis(long last) {
+						long timestamp = System.currentTimeMillis();
+						while (timestamp <= last) {
+							timestamp = System.currentTimeMillis();
+						}
+						return timestamp;
+					}
+
+				}
+				""".formatted(pkg);
+	}
+
+	private static String businessException(String pkg) {
+		return """
+				package %s.domain.exception;
+
+				/**
+				 * Business exception base — errorType feeds Problem Detail type URI; status is HTTP code.
+				 */
+				public abstract class BusinessException extends RuntimeException {
+
+					protected BusinessException(String message) {
+						super(message);
+					}
+
+					public abstract String errorType();
+
+					public abstract int status();
 
 				}
 				""".formatted(pkg);
@@ -231,6 +331,7 @@ final class DddCrudSliceGenerator {
 		return """
 				package %s.application.advice;
 
+				import %s.domain.exception.BusinessException;
 				import %s.domain.exception.%sNotFoundException;
 
 				import java.net.URI;
@@ -238,29 +339,64 @@ final class DddCrudSliceGenerator {
 
 				import org.springframework.http.HttpStatus;
 				import org.springframework.http.ProblemDetail;
-								import org.springframework.web.bind.annotation.ExceptionHandler;
+				import org.springframework.web.bind.MethodArgumentNotValidException;
+				import org.springframework.web.bind.annotation.ExceptionHandler;
 				import org.springframework.web.bind.annotation.RestControllerAdvice;
 				import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+				import org.springframework.http.HttpHeaders;
+				import org.springframework.http.HttpStatusCode;
+				import org.springframework.http.ResponseEntity;
+				import org.springframework.lang.Nullable;
+				import org.springframework.web.context.request.WebRequest;
 
 				/**
 				 * Problem Details (RFC 7807) — no global ApiResponse/R wrapper.
+				 * Maps BusinessException hierarchy + validation failures.
 				 */
 				@RestControllerAdvice
 				public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 					private static final String ERROR_TYPE_BASE = "https://api.example.com/errors/";
 
-					@ExceptionHandler(%sNotFoundException.class)
-					public ProblemDetail handleNotFound(%sNotFoundException ex) {
-						ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-						detail.setType(URI.create(ERROR_TYPE_BASE + "not-found"));
-						detail.setTitle("Resource not found");
+					@ExceptionHandler(BusinessException.class)
+					public ProblemDetail handleBusiness(BusinessException ex) {
+						HttpStatus status = HttpStatus.resolve(ex.status());
+						if (status == null) {
+							status = HttpStatus.BAD_REQUEST;
+						}
+						ProblemDetail detail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
+						detail.setType(URI.create(ERROR_TYPE_BASE + ex.errorType()));
+						detail.setTitle("Business error");
 						detail.setProperty("timestamp", Instant.now());
 						return detail;
 					}
 
+					@ExceptionHandler(%sNotFoundException.class)
+					public ProblemDetail handleNotFound(%sNotFoundException ex) {
+						ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+						detail.setType(URI.create(ERROR_TYPE_BASE + ex.errorType()));
+						detail.setTitle("Resource not found");
+						detail.setProperty("id", ex.getId());
+						detail.setProperty("timestamp", Instant.now());
+						return detail;
+					}
+
+					@Override
+					@Nullable
+					protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+							HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+						ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+								"Validation failed");
+						detail.setType(URI.create(ERROR_TYPE_BASE + "validation"));
+						detail.setTitle("Validation failed");
+						detail.setProperty("timestamp", Instant.now());
+						detail.setProperty("errors", ex.getBindingResult().getFieldErrors().stream()
+								.map(fe -> fe.getField() + ": " + fe.getDefaultMessage()).toList());
+						return ResponseEntity.badRequest().body(detail);
+					}
+
 				}
-				""".formatted(pkg, pkg, entity, entity, entity);
+				""".formatted(pkg, pkg, pkg, entity, entity, entity);
 	}
 
 	private static String mybatisConfig(String pkg) {
@@ -271,6 +407,7 @@ final class DddCrudSliceGenerator {
 				import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 				import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 				import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
+				import %s.contract.common.id.SnowflakeIdGenerator;
 
 				import org.springframework.context.annotation.Bean;
 				import org.springframework.context.annotation.Configuration;
@@ -286,13 +423,20 @@ final class DddCrudSliceGenerator {
 						return interceptor;
 					}
 
+					@Bean
+					public SnowflakeIdGenerator snowflakeIdGenerator() {
+						return new SnowflakeIdGenerator();
+					}
+
 				}
-				""".formatted(pkg);
+				""".formatted(pkg, pkg);
 	}
 
 	private static String h2ProfileYml() {
 		return """
-				# Local / smoke profile: spring.profiles.active=h2
+				# Local / smoke profile — activate with: --spring.profiles.active=h2
+				# Default (no profile): PostgreSQL + Flyway (see application.yml).
+				# H2: Flyway OFF; schema-h2.sql applies PG→H2 mapped DDL (TIMESTAMPTZ→TIMESTAMP, BOOLEAN kept).
 				spring:
 				  datasource:
 				    url: jdbc:h2:mem:ddd_smoke;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
@@ -307,8 +451,14 @@ final class DddCrudSliceGenerator {
 				      schema-locations: classpath:schema-h2.sql
 
 				mybatis-plus:
+				  mapper-locations: classpath*:mapper/*.xml
 				  configuration:
 				    map-underscore-to-camel-case: true
+				  global-config:
+				    db-config:
+				      logic-delete-field: deleted
+				      logic-delete-value: true
+				      logic-not-delete-value: false
 				""";
 	}
 
@@ -316,13 +466,29 @@ final class DddCrudSliceGenerator {
 
 	private static String sql(String table, String desc, List<FieldSpec> fields) {
 		StringBuilder cols = new StringBuilder();
+		StringBuilder comments = new StringBuilder();
+		comments.append("COMMENT ON TABLE  ").append(table).append(" IS '").append(esc(desc)).append("表';\n");
+		comments.append("COMMENT ON COLUMN ").append(table).append(".id IS '主键（Snowflake）';\n");
 		for (FieldSpec f : fields) {
 			cols.append("    ").append(pad(f.column(), 14)).append(f.sqlType());
 			if (f.required()) {
 				cols.append(" NOT NULL");
 			}
 			cols.append(",\n");
+			String cmt = f.schemaDescription();
+			comments.append("COMMENT ON COLUMN ")
+				.append(table)
+				.append(".")
+				.append(f.column())
+				.append(" IS '")
+				.append(esc(cmt))
+				.append("';\n");
 		}
+		comments.append("COMMENT ON COLUMN ").append(table).append(".status IS '状态';\n");
+		comments.append("COMMENT ON COLUMN ").append(table).append(".version IS '乐观锁版本号';\n");
+		comments.append("COMMENT ON COLUMN ").append(table).append(".deleted IS '删除标记';\n");
+		comments.append("COMMENT ON COLUMN ").append(table).append(".create_time IS '创建时间';\n");
+		comments.append("COMMENT ON COLUMN ").append(table).append(".update_time IS '更新时间';\n");
 		StringBuilder uniques = new StringBuilder();
 		for (FieldSpec f : fields) {
 			if (f.unique()) {
@@ -343,12 +509,12 @@ final class DddCrudSliceGenerator {
 				    id             VARCHAR(64)  PRIMARY KEY,
 				%s    status         VARCHAR(32)  NOT NULL,
 				    version        INT          NOT NULL DEFAULT 0,
-				    deleted        INT          NOT NULL DEFAULT 0,
+				    deleted        BOOLEAN      NOT NULL DEFAULT FALSE,
 				    create_time    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
 				    update_time    TIMESTAMPTZ
 				);
 				%sCREATE INDEX idx_%s_status ON %s (status);
-				""".formatted(desc, table, cols, uniques, table, table);
+				%s""".formatted(desc, table, cols, uniques, table, table, comments);
 	}
 
 	private static String createRequest(String pkg, String entity, String desc, List<FieldSpec> fields,
@@ -393,10 +559,15 @@ final class DddCrudSliceGenerator {
 		String ann = swagger ? "@Schema(description = \"%s查询请求\")\n".formatted(esc(desc)) : "";
 		String kw = swagger ? "@Schema(description = \"关键字\") String keyword" : "String keyword";
 		String st = swagger ? "@Schema(description = \"状态\") String status" : "String status";
-		String cur = swagger ? "@Schema(description = \"页码\", defaultValue = \"1\") long current" : "long current";
-		String size = swagger ? "@Schema(description = \"每页大小\", defaultValue = \"20\") long size" : "long size";
+		String cur = swagger ? "@Min(1) @Schema(description = \"页码\", defaultValue = \"1\") long current"
+				: "@Min(1) long current";
+		String size = swagger ? "@Min(1) @Max(200) @Schema(description = \"每页大小\", defaultValue = \"20\") long size"
+				: "@Min(1) @Max(200) long size";
 		return """
 				package %s.contract.dto.request;
+
+				import jakarta.validation.constraints.Max;
+				import jakarta.validation.constraints.Min;
 
 				%s/**
 				 * 分页查询%s请求
@@ -509,43 +680,88 @@ final class DddCrudSliceGenerator {
 				 */
 				public enum %sStatusEnum {
 
-					ACTIVE, DISABLED
+					ACTIVE("启用"),
+					DISABLED("停用");
+
+					private final String description;
+
+					%sStatusEnum(String description) {
+						this.description = description;
+					}
+
+					public String getDescription() {
+						return description;
+					}
 
 				}
-				""".formatted(pkg, desc, entity);
+				""".formatted(pkg, desc, entity, entity);
 	}
 
 	private static String feignClient(String pkg, String entity, String desc, boolean swagger) {
 		return """
 				package %s.feign;
 
+				import %s.contract.common.page.PageResult;
 				import %s.contract.constant.%sApiPath;
 				import %s.contract.constant.%sServiceName;
+				import %s.contract.dto.request.Create%sRequest;
+				import %s.contract.dto.request.Query%sRequest;
+				import %s.contract.dto.request.Update%sRequest;
 				import %s.contract.dto.response.%sDetailResponse;
+				import %s.contract.dto.response.%sSummaryResponse;
 
 				import org.springframework.cloud.openfeign.FeignClient;
+				import org.springframework.http.HttpStatus;
+				import org.springframework.validation.annotation.Validated;
+				import org.springframework.web.bind.annotation.DeleteMapping;
 				import org.springframework.web.bind.annotation.GetMapping;
 				import org.springframework.web.bind.annotation.PathVariable;
+				import org.springframework.web.bind.annotation.PostMapping;
+				import org.springframework.web.bind.annotation.PutMapping;
+				import org.springframework.web.bind.annotation.RequestBody;
+				import org.springframework.web.bind.annotation.ResponseStatus;
 
 				/**
-				 * %s Feign client (provider-owned contract).
+				 * %s Feign client — mirrors Controller paths/signatures.
 				 */
 				@FeignClient(name = %sServiceName.NAME, path = %sApiPath.BASE,
 						fallbackFactory = %sFeignFallbackFactory.class)
 				public interface %sFeignClient {
 
+					@GetMapping
+					PageResult<%sSummaryResponse> page(@Validated Query%sRequest query);
+
 					@GetMapping("/{id}")
 					%sDetailResponse detail(@PathVariable("id") String id);
 
+					@PostMapping
+					@ResponseStatus(HttpStatus.CREATED)
+					%sDetailResponse create(@RequestBody @Validated Create%sRequest request);
+
+					@PutMapping("/{id}")
+					%sDetailResponse update(@PathVariable("id") String id,
+							@RequestBody @Validated Update%sRequest request);
+
+					@DeleteMapping("/{id}")
+					@ResponseStatus(HttpStatus.NO_CONTENT)
+					void delete(@PathVariable("id") String id);
+
 				}
-				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, desc, entity, entity, entity, entity, entity);
+				""".formatted(pkg, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity,
+				pkg, entity, desc, entity, entity, entity, entity, entity, entity, entity, entity, entity, entity,
+				entity);
 	}
 
 	private static String feignFallback(String pkg, String entity, String desc) {
 		return """
 				package %s.feign;
 
+				import %s.contract.common.page.PageResult;
+				import %s.contract.dto.request.Create%sRequest;
+				import %s.contract.dto.request.Query%sRequest;
+				import %s.contract.dto.request.Update%sRequest;
 				import %s.contract.dto.response.%sDetailResponse;
+				import %s.contract.dto.response.%sSummaryResponse;
 
 				import org.springframework.cloud.openfeign.FallbackFactory;
 				import org.springframework.stereotype.Component;
@@ -555,11 +771,36 @@ final class DddCrudSliceGenerator {
 
 					@Override
 					public %sFeignClient create(Throwable cause) {
-						return (id) -> null;
+						return new %sFeignClient() {
+							@Override
+							public PageResult<%sSummaryResponse> page(Query%sRequest query) {
+								return PageResult.of(java.util.List.of(), 0, 1, 20);
+							}
+
+							@Override
+							public %sDetailResponse detail(String id) {
+								return null;
+							}
+
+							@Override
+							public %sDetailResponse create(Create%sRequest request) {
+								return null;
+							}
+
+							@Override
+							public %sDetailResponse update(String id, Update%sRequest request) {
+								return null;
+							}
+
+							@Override
+							public void delete(String id) {
+							}
+						};
 					}
 
 				}
-				""".formatted(pkg, pkg, entity, entity, entity, entity);
+				""".formatted(pkg, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity, entity, entity,
+				entity, entity, entity, entity, entity, entity, entity, entity, entity);
 	}
 
 	// ----- domain -----
@@ -733,10 +974,11 @@ final class DddCrudSliceGenerator {
 	}
 
 	private static String notFound(String pkg, String entity, String desc) {
+		String type = entity.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT) + "-not-found";
 		return """
 				package %s.domain.exception;
 
-				public class %sNotFoundException extends RuntimeException {
+				public class %sNotFoundException extends BusinessException {
 
 					private final String id;
 
@@ -749,8 +991,18 @@ final class DddCrudSliceGenerator {
 						return id;
 					}
 
+					@Override
+					public String errorType() {
+						return "%s";
+					}
+
+					@Override
+					public int status() {
+						return 404;
+					}
+
 				}
-				""".formatted(pkg, entity, entity, desc);
+				""".formatted(pkg, entity, entity, desc, type);
 	}
 
 	// ----- infrastructure -----
@@ -758,7 +1010,7 @@ final class DddCrudSliceGenerator {
 	private static String po(String pkg, String entity, String table, List<FieldSpec> fields) {
 		StringBuilder body = new StringBuilder();
 		body.append("""
-					@TableId
+					@TableId(type = IdType.ASSIGN_ID)
 					private String id;
 				""");
 		for (FieldSpec f : fields) {
@@ -769,7 +1021,7 @@ final class DddCrudSliceGenerator {
 					@Version
 					private Long version;
 					@TableLogic
-					private Integer deleted;
+					private Boolean deleted;
 					private OffsetDateTime createTime;
 					private OffsetDateTime updateTime;
 				""");
@@ -779,12 +1031,13 @@ final class DddCrudSliceGenerator {
 		}
 		body.append(accessor("String", "Status", "status"));
 		body.append(accessor("Long", "Version", "version"));
-		body.append(accessor("Integer", "Deleted", "deleted"));
+		body.append(accessor("Boolean", "Deleted", "deleted"));
 		body.append(accessor("OffsetDateTime", "CreateTime", "createTime"));
 		body.append(accessor("OffsetDateTime", "UpdateTime", "updateTime"));
 		return """
 				package %s.infrastructure.persistence.entity;
 
+				import com.baomidou.mybatisplus.annotation.IdType;
 				import com.baomidou.mybatisplus.annotation.TableId;
 				import com.baomidou.mybatisplus.annotation.TableLogic;
 				import com.baomidou.mybatisplus.annotation.TableName;
@@ -794,7 +1047,7 @@ final class DddCrudSliceGenerator {
 
 				%s
 				/**
-				 * %s 持久化对象
+				 * %s 持久化对象（id: Snowflake via ASSIGN_ID / ApplicationService pre-assign）
 				 */
 				@TableName("%s")
 				public class %sPO {
@@ -1032,7 +1285,7 @@ final class DddCrudSliceGenerator {
 
 						@Transactional(rollbackFor = Exception.class)
 						public %sDetailResponse create(Create%sRequest request) {
-							String id = java.util.UUID.randomUUID().toString().replace("-", "");
+							String id = idGenerator.nextId();
 							%s aggregate = %s.create(assembler.toCreateCommand(request, id));
 							%s saved = repository.save(aggregate);
 							return assembler.toDetailResponse(saved);
@@ -1065,6 +1318,7 @@ final class DddCrudSliceGenerator {
 				package %s.application.service;
 
 				import %s.application.assembler.%sAssembler;
+				import %s.contract.common.id.SnowflakeIdGenerator;
 				import %s.contract.dto.request.Create%sRequest;
 				import %s.contract.dto.request.Update%sRequest;
 				import %s.contract.dto.response.%sDetailResponse;
@@ -1076,30 +1330,33 @@ final class DddCrudSliceGenerator {
 				import org.springframework.transaction.annotation.Transactional;
 
 				/**
-				 * %s 应用服务（写侧编排）
+				 * %s 应用服务（写侧编排；ID = Snowflake）
 				 */
 				@Service
 				public class %sApplicationService {
 
 					private final %sRepository repository;
 					private final %sAssembler assembler;
+					private final SnowflakeIdGenerator idGenerator;
 
-					public %sApplicationService(%sRepository repository, %sAssembler assembler) {
+					public %sApplicationService(%sRepository repository, %sAssembler assembler,
+							SnowflakeIdGenerator idGenerator) {
 						this.repository = repository;
 						this.assembler = assembler;
+						this.idGenerator = idGenerator;
 					}
 				%s
 				}
-				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg,
-				entity, desc, entity, entity, entity, entity, entity, entity, methods);
+				""".formatted(pkg, pkg, entity, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity,
+				pkg, entity, desc, entity, entity, entity, entity, entity, entity, methods);
 	}
 
 	private static String queryService(String pkg, String entity) {
 		return """
 				package %s.application.service;
 
+				import %s.contract.common.page.PageResult;
 				import %s.contract.dto.request.Query%sRequest;
-				import %s.contract.dto.response.PageResult;
 				import %s.contract.dto.response.%sDetailResponse;
 				import %s.contract.dto.response.%sSummaryResponse;
 
@@ -1110,67 +1367,61 @@ final class DddCrudSliceGenerator {
 					PageResult<%sSummaryResponse> page(Query%sRequest query);
 
 				}
-				""".formatted(pkg, pkg, entity, pkg, pkg, entity, pkg, entity, entity, entity, entity, entity);
+				""".formatted(pkg, pkg, pkg, entity, pkg, entity, pkg, entity, entity, entity, entity, entity);
 	}
 
 	private static String queryServiceImpl(String pkg, String entity, String lower, String desc) {
-		String summaryMap = "assembler.toSummaryResponse";
 		return """
 				package %s.application.service.impl;
 
-				import %s.application.assembler.%sAssembler;
+				import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 				import %s.application.service.%sQueryService;
+				import %s.contract.common.page.PageResult;
 				import %s.contract.dto.request.Query%sRequest;
-				import %s.contract.dto.response.PageResult;
 				import %s.contract.dto.response.%sDetailResponse;
 				import %s.contract.dto.response.%sSummaryResponse;
 				import %s.domain.exception.%sNotFoundException;
-				import %s.domain.model.%s;
-				import %s.domain.query.%sQuery;
-				import %s.domain.query.PageSlice;
-				import %s.domain.repository.%sRepository;
-
-				import java.util.List;
+				import %s.infrastructure.persistence.mapper.%sReadMapper;
 
 				import org.springframework.stereotype.Service;
 				import org.springframework.transaction.annotation.Transactional;
 
 				/**
-				 * %s 查询服务（读侧，经仓储端口，不直接依赖 infrastructure）
+				 * %s 查询服务（读侧 CQRS：ReadMapper 投影，不经领域对象）
 				 */
 				@Service
 				@Transactional(readOnly = true)
 				public class %sQueryServiceImpl implements %sQueryService {
 
-					private final %sRepository repository;
-					private final %sAssembler assembler;
+					private final %sReadMapper %sReadMapper;
 
-					public %sQueryServiceImpl(%sRepository repository, %sAssembler assembler) {
-						this.repository = repository;
-						this.assembler = assembler;
+					public %sQueryServiceImpl(%sReadMapper %sReadMapper) {
+						this.%sReadMapper = %sReadMapper;
 					}
 
 					@Override
 					public %sDetailResponse detail(String id) {
-						%s aggregate = repository.findById(id)
-							.orElseThrow(() -> new %sNotFoundException(id));
-						return assembler.toDetailResponse(aggregate);
+						%sDetailResponse detail = %sReadMapper.selectDetailById(id);
+						if (detail == null) {
+							throw new %sNotFoundException(id);
+						}
+						return detail;
 					}
 
 					@Override
 					public PageResult<%sSummaryResponse> page(Query%sRequest query) {
-						%sQuery q = new %sQuery(query.keyword(), query.status());
-						PageSlice<%s> slice = repository.findPage(q, query.current(), query.size());
-						List<%sSummaryResponse> records = slice.records().stream()
-							.map(assembler::toSummaryResponse)
-							.toList();
-						return PageResult.of(records, slice.total(), query.current(), query.size());
+						Page<%sSummaryResponse> page = Page.of(query.current(), query.size());
+						return PageResult.of(
+								%sReadMapper.selectSummaryPage(page, query).getRecords(),
+								page.getTotal(),
+								page.getCurrent(),
+								page.getSize());
 					}
 
 				}
-				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, pkg, pkg, entity, pkg, entity, pkg, entity,
-				pkg, entity, pkg, entity, pkg, pkg, entity, desc, entity, entity, entity, entity, entity, entity,
-				entity, entity, entity, entity, entity, entity, entity, entity, entity, entity);
+				""".formatted(pkg, pkg, entity, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity,
+				desc, entity, entity, entity, lower, entity, entity, lower, lower, lower, entity, entity, lower, entity,
+				entity, entity, entity, lower);
 	}
 
 	private static String controller(String pkg, String entity, String lower, String desc, ApiFlags apis,
@@ -1181,13 +1432,13 @@ final class DddCrudSliceGenerator {
 
 						@Operation(summary = "分页查询%s")
 						@GetMapping
-						public PageResult<%sSummaryResponse> page(Query%sRequest query) {
+						public PageResult<%sSummaryResponse> page(@Validated Query%sRequest query) {
 							return %sQueryService.page(query);
 						}
 					""".formatted(desc, entity, entity, lower) : """
 
 						@GetMapping
-						public PageResult<%sSummaryResponse> page(Query%sRequest query) {
+						public PageResult<%sSummaryResponse> page(@Validated Query%sRequest query) {
 							return %sQueryService.page(query);
 						}
 					""".formatted(entity, entity, lower));
@@ -1276,14 +1527,18 @@ final class DddCrudSliceGenerator {
 
 							@Operation(summary = "导入%s")
 							@PostMapping("/import")
-							public java.util.Map<String, Object> importData() {
-								return importExportService.importData(null);
+							public java.util.Map<String, Object> importData(
+									@org.springframework.web.bind.annotation.RequestParam("file")
+									org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+								return importExportService.importData(file);
 							}
 						""".formatted(desc) : """
 
 							@PostMapping("/import")
-							public java.util.Map<String, Object> importData() {
-								return importExportService.importData(null);
+							public java.util.Map<String, Object> importData(
+									@org.springframework.web.bind.annotation.RequestParam("file")
+									org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+								return importExportService.importData(file);
 							}
 						""");
 			}
@@ -1292,14 +1547,16 @@ final class DddCrudSliceGenerator {
 
 							@Operation(summary = "导出%s")
 							@GetMapping("/export")
-							public java.util.Map<String, Object> exportData() {
-								return importExportService.exportData();
+							public void exportData(jakarta.servlet.http.HttpServletResponse response)
+									throws java.io.IOException {
+								importExportService.exportData(response);
 							}
 						""".formatted(desc) : """
 
 							@GetMapping("/export")
-							public java.util.Map<String, Object> exportData() {
-								return importExportService.exportData();
+							public void exportData(jakarta.servlet.http.HttpServletResponse response)
+									throws java.io.IOException {
+								importExportService.exportData(response);
 							}
 						""");
 			}
@@ -1320,7 +1577,7 @@ final class DddCrudSliceGenerator {
 				import %s.contract.dto.request.Create%sRequest;
 				import %s.contract.dto.request.Query%sRequest;
 				import %s.contract.dto.request.Update%sRequest;
-				import %s.contract.dto.response.PageResult;
+				import %s.contract.common.page.PageResult;
 				import %s.contract.dto.response.%sDetailResponse;
 				import %s.contract.dto.response.%sSummaryResponse;
 
@@ -1359,43 +1616,222 @@ final class DddCrudSliceGenerator {
 				methods);
 	}
 
-	private static String importExportService(String pkg, String entity, String desc, ApiFlags apis) {
+	private static String importExportService(String pkg, String entity, String desc, ApiFlags apis,
+			List<FieldSpec> fields) {
+		StringBuilder excelFields = new StringBuilder();
+		for (FieldSpec f : fields) {
+			excelFields.append("\t\t@ExcelProperty(\"").append(esc(f.schemaDescription())).append("\")\n");
+			excelFields.append("\t\tprivate ").append(f.type()).append(" ").append(f.name()).append(";\n\n");
+			excelFields.append("\t\tpublic ").append(f.type()).append(" get").append(f.getter()).append("() {\n");
+			excelFields.append("\t\t\treturn ").append(f.name()).append(";\n\t\t}\n\n");
+			excelFields.append("\t\tpublic void set")
+				.append(f.getter())
+				.append("(")
+				.append(f.type())
+				.append(" ")
+				.append(f.name())
+				.append(") {\n");
+			excelFields.append("\t\t\tthis.").append(f.name()).append(" = ").append(f.name()).append(";\n\t\t}\n\n");
+		}
 		StringBuilder methods = new StringBuilder();
 		if (apis.importApi()) {
-			methods.append("""
+			methods
+				.append("""
 
-						public java.util.Map<String, Object> importData(Object upload) {
-							return java.util.Map.of("accepted", true, "message",
-									"Import stub for %s — wire EasyExcel in a follow-up");
-						}
-					""".formatted(desc));
+							public java.util.Map<String, Object> importData(org.springframework.web.multipart.MultipartFile file)
+									throws java.io.IOException {
+								if (file == null || file.isEmpty()) {
+									return java.util.Map.of("accepted", false, "message", "empty upload");
+								}
+								java.util.List<%sExcelRow> rows = EasyExcel.read(file.getInputStream())
+										.head(%sExcelRow.class)
+										.sheet()
+										.doReadSync();
+								// Wire rows to Create%sRequest / ApplicationService.create as needed
+								return java.util.Map.of("accepted", true, "count", rows.size());
+							}
+						"""
+					.formatted(entity, entity, entity));
 		}
 		if (apis.exportApi()) {
-			methods.append("""
+			methods
+				.append("""
 
-						public java.util.Map<String, Object> exportData() {
-							return java.util.Map.of("accepted", true, "message",
-									"Export stub for %s — wire EasyExcel in a follow-up", "records",
-									java.util.List.of());
-						}
-					""".formatted(desc));
+							public void exportData(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+								response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+								response.setCharacterEncoding("utf-8");
+								response.setHeader("Content-Disposition", "attachment; filename=%s.xlsx");
+								java.util.List<%sExcelRow> rows = java.util.List.of(); // fill from QueryService
+								EasyExcel.write(response.getOutputStream(), %sExcelRow.class).sheet("%s").doWrite(rows);
+							}
+						"""
+					.formatted(entity.toLowerCase(Locale.ROOT), entity, entity, esc(desc)));
 		}
 		return """
 				package %s.application.service;
 
+				import com.alibaba.excel.EasyExcel;
+				import com.alibaba.excel.annotation.ExcelProperty;
+
 				import org.springframework.stereotype.Service;
 
 				/**
-				 * %s 导入导出（可编译的占位，返回可序列化响应）
+				 * %s 导入/导出（EasyExcel skeleton — compiles; wire business mapping next）.
 				 */
 				@Service
 				public class %sImportExportService {
 				%s
+
+					/** Excel row DTO for EasyExcel bind */
+					public static class %sExcelRow {
+				%s
+					}
+
 				}
-				""".formatted(pkg, desc, entity, methods);
+				""".formatted(pkg, desc, entity, methods, entity, excelFields);
 	}
 
-	// ----- helpers -----
+	private static String readMapper(String pkg, String entity) {
+		return """
+				package %s.infrastructure.persistence.mapper;
+
+				import com.baomidou.mybatisplus.core.metadata.IPage;
+				import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+				import %s.contract.dto.request.Query%sRequest;
+				import %s.contract.dto.response.%sDetailResponse;
+				import %s.contract.dto.response.%sSummaryResponse;
+
+				import org.apache.ibatis.annotations.Mapper;
+				import org.apache.ibatis.annotations.Param;
+
+				/**
+				 * 读侧 Mapper（CQRS 查询投影，直接出 DTO）
+				 */
+				@Mapper
+				public interface %sReadMapper {
+
+					%sDetailResponse selectDetailById(@Param("id") String id);
+
+					IPage<%sSummaryResponse> selectSummaryPage(Page<?> page, @Param("query") Query%sRequest query);
+
+				}
+				""".formatted(pkg, pkg, entity, pkg, entity, pkg, entity, entity, entity, entity, entity);
+	}
+
+	private static String readMapperXml(String pkg, String entity, String table, List<FieldSpec> fields) {
+		String detailCols = fields.stream()
+			.map((f) -> "               " + f.column() + ",")
+			.collect(Collectors.joining("\n"));
+		List<FieldSpec> brief = fields.stream().limit(3).toList();
+		String summaryCols = brief.stream()
+			.map((f) -> "               " + f.column() + ",")
+			.collect(Collectors.joining("\n"));
+		return """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+				    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+				<mapper namespace="%s.infrastructure.persistence.mapper.%sReadMapper">
+
+				    <select id="selectDetailById" resultType="%s.contract.dto.response.%sDetailResponse">
+				        SELECT id,
+				%s
+				               status,
+				               version
+				        FROM %s
+				        WHERE id = #{id} AND deleted = FALSE
+				    </select>
+
+				    <!-- PaginationInnerInterceptor adds LIMIT — do not write LIMIT here -->
+				    <select id="selectSummaryPage" resultType="%s.contract.dto.response.%sSummaryResponse">
+				        SELECT id,
+				%s
+				               status
+				        FROM %s
+				        WHERE deleted = FALSE
+				        <if test="query.status != null and query.status != ''">
+				            AND status = #{query.status}
+				        </if>
+				        ORDER BY create_time DESC
+				    </select>
+				</mapper>
+				""".formatted(pkg, entity, pkg, entity, detailCols, table, pkg, entity, summaryCols, table);
+	}
+
+	private static String applicationServiceTest(String pkg, String entity, String lower, List<FieldSpec> fields) {
+		String createArgs = fields.stream().map((f) -> switch (f.type()) {
+			case "Integer", "int" -> "1";
+			case "Long", "long" -> "1L";
+			case "Boolean", "boolean" -> "true";
+			case "BigDecimal" -> "java.math.BigDecimal.ONE";
+			default -> "\"" + ("email".equals(f.name()) ? "a@b.c" : "demo") + "\"";
+		}).collect(Collectors.joining(", "));
+		String tpl = """
+				package {{pkg}}.application.service;
+
+				import {{pkg}}.application.assembler.{{entity}}Assembler;
+				import {{pkg}}.contract.common.id.SnowflakeIdGenerator;
+				import {{pkg}}.contract.dto.request.Create{{entity}}Request;
+				import {{pkg}}.contract.dto.response.{{entity}}DetailResponse;
+				import {{pkg}}.domain.model.{{entity}};
+				import {{pkg}}.domain.query.{{entity}}Query;
+				import {{pkg}}.domain.query.PageSlice;
+				import {{pkg}}.domain.repository.{{entity}}Repository;
+
+				import java.util.HashMap;
+				import java.util.Map;
+				import java.util.Optional;
+
+				import org.junit.jupiter.api.Test;
+
+				import static org.assertj.core.api.Assertions.assertThat;
+
+				/**
+				 * Unit test with in-memory fake repository (no Spring context).
+				 */
+				class {{entity}}ApplicationServiceTest {
+
+					@Test
+					void createPersistsViaRepository() {
+						Fake{{entity}}Repository repo = new Fake{{entity}}Repository();
+						{{entity}}ApplicationService service = new {{entity}}ApplicationService(repo, new {{entity}}Assembler(),
+								new SnowflakeIdGenerator(1L));
+						Create{{entity}}Request request = new Create{{entity}}Request({{createArgs}});
+						{{entity}}DetailResponse detail = service.create(request);
+						assertThat(detail.id()).isNotBlank();
+						assertThat(repo.store).containsKey(detail.id());
+					}
+
+					static final class Fake{{entity}}Repository implements {{entity}}Repository {
+
+						final Map<String, {{entity}}> store = new HashMap<>();
+
+						@Override
+						public {{entity}} save({{entity}} aggregate) {
+							store.put(aggregate.getId(), aggregate);
+							return aggregate;
+						}
+
+						@Override
+						public Optional<{{entity}}> findById(String id) {
+							return Optional.ofNullable(store.get(id));
+						}
+
+						@Override
+						public void deleteById(String id) {
+							store.remove(id);
+						}
+
+						@Override
+						public PageSlice<{{entity}}> findPage({{entity}}Query query, long current, long size) {
+							return PageSlice.of(store.values().stream().toList(), store.size());
+						}
+
+					}
+
+				}
+				""";
+		return tpl.replace("{{pkg}}", pkg).replace("{{entity}}", entity).replace("{{createArgs}}", createArgs);
+	}
 
 	private static String validatedRecordFields(List<FieldSpec> fields, boolean forCreate, boolean swagger) {
 		if (fields.isEmpty()) {

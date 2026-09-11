@@ -1,3 +1,5 @@
+# Default profile: PostgreSQL + Flyway
+# Local smoke without Postgres: --spring.profiles.active=h2 (see application-h2.yml)
 spring:
   application:
     name: {{svc}}
@@ -22,6 +24,12 @@ mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: true
+      logic-not-delete-value: false
+      id-type: assign_id
 
 management:
   endpoints:
@@ -36,3 +44,6 @@ management:
 server:
   port: 8080
   shutdown: graceful
+
+# Jackson 3 (Boot 4): use tools.jackson.* for any custom TypeHandler / ObjectMapper.
+# ArchUnit bans com.fasterxml.jackson in ModuleDependencyTest.

@@ -7,7 +7,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
- * Architecture guardrails for the six-module layout (skeleton stub).
+ * Architecture guardrails for the six-module layout.
  */
 @AnalyzeClasses(packages = "{{packageName}}")
 class ModuleDependencyTest {
@@ -25,5 +25,17 @@ class ModuleDependencyTest {
 		.should()
 		.dependOnClassesThat()
 		.resideInAPackage("org.springframework..");
+
+	@ArchTest
+	static final ArchRule banLegacyJackson = noClasses().should()
+		.dependOnClassesThat()
+		.resideInAPackage("com.fasterxml.jackson..");
+
+	@ArchTest
+	static final ArchRule domainMustNotDependOnInfrastructure = noClasses().that()
+		.resideInAPackage("..domain..")
+		.should()
+		.dependOnClassesThat()
+		.resideInAPackage("..infrastructure..");
 
 }

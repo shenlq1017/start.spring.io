@@ -31,6 +31,72 @@ const PROPERTIES_MAPPING_URL = {
   dependencies: 'dependencies',
 }
 
+
+/**
+ * Shared template + entities query extras for Explore AND Generate.
+ * Must stay identical so preview zip matches downloaded zip.
+ */
+export const buildTemplateEntitiesQuery = values => {
+  let extra = ''
+  const architecture = get(values, 'architecture')
+  const entities = get(values, 'entities') || []
+  const template = normalizeTemplate(
+    architecture,
+    get(values, 'template'),
+    entities
+  )
+  if (isTemplateVisible(architecture)) {
+    const tpl =
+      template ||
+      normalizeTemplate(architecture, undefined, entities) ||
+      ''
+    if (tpl) {
+      extra += `&template=${encodeURIComponent(tpl)}`
+    }
+  }
+  if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
+    extra += `&entities=${encodeURIComponent(
+      JSON.stringify(serializeEntitiesForApi(entities))
+    )}`
+  }
+  return extra
+}
+
+/**
+ * Canonical starter.zip query string (same for Explore + Generate).
+ * @param values Initializr values
+ * @param dependencyList full dependency catalog for version-range filtering
+ */
+export const buildStarterQuery = (values, dependencyList = []) => {
+  const artifact = get(values, 'meta.artifact')
+  const params = querystring.stringify({
+    type: get(values, 'project'),
+    language: get(values, 'language'),
+    bootVersion: get(values, 'boot'),
+    baseDir: artifact,
+    groupId: get(values, 'meta.group'),
+    artifactId: artifact,
+    name: get(values, 'meta.name') || artifact || 'demo',
+    description:
+      get(values, 'meta.description') || 'Demo project for Spring Boot',
+    packageName: get(values, 'meta.packageName'),
+    packaging: 'jar',
+    javaVersion: get(values, 'meta.java'),
+    configurationFileFormat: get(values, 'meta.configurationFileFormat'),
+  })
+  let paramsDependencies = applyArchitectureDependencies(values)
+    .map(dependency => {
+      const dep = (dependencyList || []).find(it => it.id === dependency)
+      return isValidDependency(get(values, 'boot'), dep) ? dependency : null
+    })
+    .filter(dep => !!dep)
+    .join(',')
+  if (paramsDependencies) {
+    paramsDependencies = `&dependencies=${paramsDependencies}`
+  }
+  return `${params}${paramsDependencies}${buildTemplateEntitiesQuery(values)}`
+}
+
 export const getInfo = function getInfo(url) {
   return new Promise((resolve, reject) => {
     fetch(`${url}`, {
@@ -71,25 +137,10 @@ export const getShareUrl = values => {
   } else {
     params = `${params}&dependencies=`
   }
-  const architecture = get(values, 'architecture')
-  const entities = get(values, 'entities') || []
-  const template = normalizeTemplate(
-    architecture,
-    get(values, 'template'),
-    entities
-  )
-  if (isTemplateVisible(architecture)) {
-    const tpl =
-      template ||
-      normalizeTemplate(architecture, undefined, entities) ||
-      ''
-    if (tpl) {
-      params = `${params}&template=${encodeURIComponent(tpl)}`
-    }
-  }
-  if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
-    const payload = JSON.stringify(serializeEntitiesForApi(entities))
-    params = `${params}&entities=${encodeURIComponent(payload)}`
+  // Same template/entities encoding as getProject / Explore
+  const extras = buildTemplateEntitiesQuery(values)
+  if (extras.startsWith('&')) {
+    params = `${params}${extras}`
   }
   return params
 }
@@ -326,57 +377,8 @@ export const isValidDependency = function isValidDependency(boot, dependency) {
 
 export const getProject = function getProject(url, values, config) {
   return new Promise((resolve, reject) => {
-    const artifact = get(values, 'meta.artifact')
-    const params = querystring.stringify({
-      type: get(values, 'project'),
-      language: get(values, 'language'),
-      bootVersion: get(values, 'boot'),
-      baseDir: artifact,
-      groupId: get(values, 'meta.group'),
-      artifactId: artifact,
-      name: get(values, 'meta.name') || artifact || 'demo',
-      description:
-        get(values, 'meta.description') || 'Demo project for Spring Boot',
-      packageName: get(values, 'meta.packageName'),
-      packaging: 'jar',
-      javaVersion: get(values, 'meta.java'),
-      configurationFileFormat: get(values, 'meta.configurationFileFormat'),
-    })
-    // Architecture radio maps to marker deps (hidden from Dependencies UI)
-    let paramsDependencies = applyArchitectureDependencies(values)
-      .map(dependency => {
-        const dep = config.find(it => it.id === dependency)
-        return isValidDependency(get(values, 'boot'), dep) ? dependency : null
-      })
-      .filter(dep => !!dep)
-      .join(',')
-
-    if (paramsDependencies) {
-      paramsDependencies = `&dependencies=${paramsDependencies}`
-    }
-    let extra = ''
-    const architecture = get(values, 'architecture')
-    const entities = get(values, 'entities') || []
-    const template = normalizeTemplate(
-      architecture,
-      get(values, 'template'),
-      entities
-    )
-    if (isTemplateVisible(architecture)) {
-      const tpl =
-        template ||
-        normalizeTemplate(architecture, undefined, entities) ||
-        ''
-      if (tpl) {
-        extra += `&template=${encodeURIComponent(tpl)}`
-      }
-    }
-    if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
-      extra += `&entities=${encodeURIComponent(
-        JSON.stringify(serializeEntitiesForApi(entities))
-      )}`
-    }
-    fetch(`${url}?${params}${paramsDependencies}${extra}`, {
+    const query = buildStarterQuery(values, config)
+    fetch(`${url}?${query}`, {
       method: 'GET',
     }).then(
       response => {

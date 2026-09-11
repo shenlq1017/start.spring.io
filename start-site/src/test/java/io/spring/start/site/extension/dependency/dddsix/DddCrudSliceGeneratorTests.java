@@ -92,15 +92,27 @@ class DddCrudSliceGeneratorTests {
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"))
 			.exists();
 		assertThat(projectRoot
-			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/dto/response/PageResult.java"))
+			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/common/page/PageResult.java"))
+			.exists();
+		assertThat(projectRoot.resolve(
+				"demo-service-contract/src/main/java/com/example/demo/contract/common/id/SnowflakeIdGenerator.java"))
 			.exists();
 		assertThat(projectRoot.resolve("demo-service-bootstrap/src/main/resources/application-h2.yml")).exists();
+		assertThat(projectRoot.resolve(
+				"demo-service-infrastructure/src/main/java/com/example/demo/infrastructure/persistence/mapper/UserReadMapper.java"))
+			.exists();
+		assertThat(projectRoot.resolve("demo-service-infrastructure/src/main/resources/mapper/UserReadMapper.xml"))
+			.exists();
+		assertThat(projectRoot.resolve(
+				"demo-service-application/src/test/java/com/example/demo/application/service/UserApplicationServiceTest.java"))
+			.exists();
 
 		String controller = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/controller/UserController.java"));
 		assertThat(controller).contains("DeleteMapping").contains("/import").contains("/export");
 		assertThat(controller).contains("@Tag").contains("@Operation").contains("@Parameter");
 		assertThat(controller).contains("@RequestMapping(UserApiPath.BASE)");
+		assertThat(controller).contains("@Validated QueryUserRequest");
 		assertThat(controller).doesNotContain("TODO").doesNotContain("UnsupportedOperationException");
 
 		String apiPath = Files.readString(projectRoot
@@ -113,11 +125,16 @@ class DddCrudSliceGeneratorTests {
 
 		String queryImpl = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"));
-		assertThat(queryImpl).contains("PageSlice").contains("findPage").doesNotContain(".skip(");
+		assertThat(queryImpl).contains("UserReadMapper")
+			.contains("selectSummaryPage")
+			.contains("Page.of")
+			.doesNotContain(".skip(");
 
 		String appService = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"));
 		assertThat(appService).contains("repository.save")
+			.contains("idGenerator.nextId()")
+			.doesNotContain("UUID")
 			.doesNotContain("TODO")
 			.doesNotContain("UnsupportedOperationException");
 
@@ -126,9 +143,33 @@ class DddCrudSliceGeneratorTests {
 		assertThat(repoImpl).contains("insert").contains("toDomain").doesNotContain("TODO");
 		assertThat(repoImpl).contains("Page.of").contains("selectPage").contains("findPage");
 
+		String po = Files.readString(projectRoot.resolve(
+				"demo-service-infrastructure/src/main/java/com/example/demo/infrastructure/persistence/entity/UserPO.java"));
+		assertThat(po).contains("IdType.ASSIGN_ID").contains("Boolean deleted");
+
+		String sql = Files.readString(projectRoot
+			.resolve("demo-service-bootstrap/src/main/resources/db/migration/V1__01_create_sys_user.sql"));
+		assertThat(sql).contains("BOOLEAN").contains("COMMENT ON").contains("FALSE");
+
+		String queryReq = Files.readString(projectRoot.resolve(
+				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/QueryUserRequest.java"));
+		assertThat(queryReq).contains("@Min").contains("@Max");
+
+		String statusEnum = Files.readString(projectRoot
+			.resolve("demo-service-contract/src/main/java/com/example/demo/contract/enums/UserStatusEnum.java"));
+		assertThat(statusEnum).contains("启用").contains("getDescription");
+
+		String ie = Files.readString(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/UserImportExportService.java"));
+		assertThat(ie).contains("EasyExcel").contains("ExcelRow").contains("doReadSync");
+
 		String createReq = Files.readString(projectRoot.resolve(
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"));
 		assertThat(createReq).contains("@Schema").contains("用户名").contains("@NotBlank");
+
+		String feign = Files.readString(projectRoot
+			.resolve("demo-service-feign-client/src/main/java/com/example/demo/feign/UserFeignClient.java"));
+		assertThat(feign).contains("page(").contains("create(").contains("update(").contains("delete(");
 
 		assertThat(projectRoot
 			.resolve("demo-service-bootstrap/src/main/java/com/example/demo/DemoServiceApplication.java")).exists();

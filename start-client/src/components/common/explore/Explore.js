@@ -47,6 +47,10 @@ function Explore({ open, onClose, projectName, blob }) {
     }
     if (explore && blob) {
       load()
+    } else if (explore && !blob) {
+      // Show loading while a refresh is in flight (parity with Generate)
+      setTree(null)
+      setSelected(null)
     }
   }, [explore, blob, dispatch])
 

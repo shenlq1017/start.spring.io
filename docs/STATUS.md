@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~21:10 Asia/Shanghai (UTC+8). **deps-i18n + CRUD P0** on `main` (local only; no CloudAgent).
+Updated: 2026-09-11 ~22:30 Asia/Shanghai (UTC+8). **P10: CRUD P1+P2 + Explore/Generate parity** on `main` (local only; no CloudAgent).
 
 ## Phase summary
 
@@ -15,7 +15,9 @@ Updated: 2026-09-11 ~21:10 Asia/Shanghai (UTC+8). **deps-i18n + CRUD P0** on `ma
 | **P5** | Entities polish, home divider left ~55%, Control alignment, no single-app spacer hole | Done | `docs/phase-p5-notes.md` |
 | **P6** | Add→select entity, 中文描述 order, Swagger labels, deps column, radio min-width, list actions right, button borders, dark mode | Done | `docs/phase-p6-notes.md` |
 | **P7** | Java radios one line, template→selected deps kits, dark mode thorough pass | Done | `docs/phase-p7-notes.md` |
-| **P8** | Config/Java gap, real DDD CRUD + swagger + module URLs, H2 smoke | **Done** | `docs/phase-p8-notes.md` |
+| **P8** | Config/Java gap, real DDD CRUD + swagger + module URLs, H2 smoke | Done | `docs/phase-p8-notes.md` |
+| **P9** | CRUD review (zh) + pagination P0 | Done | `docs/gen-code-review-zh.md` |
+| **P10** | **All P1+P2 CRUD + Explore/Generate zip parity** | **Done** | `docs/phase-p10-notes.md` |
 
 ## Project Structure markers
 
@@ -28,7 +30,8 @@ Updated: 2026-09-11 ~21:10 Asia/Shanghai (UTC+8). **deps-i18n + CRUD P0** on `ma
 
 | Template | Selected deps (right panel) |
 |----------|-----------------------------|
-| `ddd-standard` / `ddd-enhanced` | web, validation, mybatis-plus, postgresql, flyway, knife4j |
+| `ddd-standard` | web, validation, mybatis-plus, postgresql, flyway, knife4j |
+| `ddd-enhanced` | + **easyexcel** |
 | `platform-standard` | web, validation, mybatis-plus, postgresql, knife4j |
 | `platform-enhanced` | + flyway |
 
@@ -36,6 +39,5 @@ Updated: 2026-09-11 ~21:10 Asia/Shanghai (UTC+8). **deps-i18n + CRUD P0** on `ma
 
 1. `git pull` on Windows clone
 2. `./mvnw clean install -DskipTests` then `java -jar start-site/target/start-site-exec.jar --application.offline=true`
-3. Verify deps panel: **names stay English**, descriptions Chinese (full catalog)
-4. Generate 企业DDD增强 + User → Controller `@RequestMapping(UserApiPath.BASE)`; QueryService uses `PageSlice`/`Page.of` (no hand-rolled skip)
-5. Review: `docs/gen-code-review-zh.md`; MCP/Docker unchanged
+3. 企业DDD增强 + User → Explore tree **must match** Generate zip (ReadMapper, Snowflake, `@Validated` page, `contract.common.page.PageResult`)
+4. Review: `docs/gen-code-review-zh.md`, `docs/phase-p10-notes.md`; smoke zip `docs/p10-smoke-demo-service.zip`
