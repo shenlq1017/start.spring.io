@@ -288,46 +288,14 @@
     }
   }
 
-  $range: 12px;
-
-  .level-0 {
-    .text {
-      margin-left: 0 * $range + 6px;
-    }
-  }
-  .level-1 {
-    .text {
-      margin-left: 1 * $range + 6px;
-    }
-  }
-  .level-2 {
-    .text {
-      margin-left: 2 * $range + 6px;
-    }
-  }
-  .level-3 {
-    .text {
-      margin-left: 3 * $range + 6px;
-    }
-  }
-  .level-4 {
-    .text {
-      margin-left: 4 * $range + 6px;
-    }
-  }
-  .level-5 {
-    .text {
-      margin-left: 5 * $range + 6px;
-    }
-  }
-  .level-6 {
-    .text {
-      margin-left: 6 * $range + 6px;
-    }
-  }
-  .level-7 {
-    .text {
-      margin-left: 7 * $range + 6px;
+  // Depth indent: Tree.js also sets inline marginLeft (depth * 16 + 6).
+  // Keep CSS levels as fallback for deep DDD trees (was capped at 7 → flat children).
+  $range: 16px;
+  @for $i from 0 through 24 {
+    .level-#{$i} {
+      .text {
+        margin-left: $i * $range + 6px;
+      }
     }
   }
   .icon-folder {

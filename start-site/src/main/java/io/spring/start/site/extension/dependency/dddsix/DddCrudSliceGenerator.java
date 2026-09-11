@@ -185,9 +185,7 @@ final class DddCrudSliceGenerator {
 		write(root.resolve(aBase + "/assembler/" + entity + "Assembler.java"), assembler(pkg, entity, fields));
 		write(root.resolve(aBase + "/service/" + entity + "ApplicationService.java"),
 				appService(pkg, entity, lower, desc, apis));
-		write(root.resolve(aBase + "/service/" + entity + "QueryService.java"), queryService(pkg, entity));
-		write(root.resolve(aBase + "/service/impl/" + entity + "QueryServiceImpl.java"),
-				queryServiceImpl(pkg, entity, lower, desc));
+		write(root.resolve(aBase + "/service/" + entity + "QueryService.java"), queryService(pkg, entity, lower, desc));
 		write(root.resolve(aBase + "/controller/" + entity + "Controller.java"),
 				controller(pkg, entity, lower, desc, apis, swagger));
 		if (apis.importApi() || apis.exportApi()) {
@@ -1351,31 +1349,11 @@ final class DddCrudSliceGenerator {
 				pkg, entity, desc, entity, entity, entity, entity, entity, entity, methods);
 	}
 
-	private static String queryService(String pkg, String entity) {
+	private static String queryService(String pkg, String entity, String lower, String desc) {
 		return """
 				package %s.application.service;
 
-				import %s.contract.common.page.PageResult;
-				import %s.contract.dto.request.Query%sRequest;
-				import %s.contract.dto.response.%sDetailResponse;
-				import %s.contract.dto.response.%sSummaryResponse;
-
-				public interface %sQueryService {
-
-					%sDetailResponse detail(String id);
-
-					PageResult<%sSummaryResponse> page(Query%sRequest query);
-
-				}
-				""".formatted(pkg, pkg, pkg, entity, pkg, entity, pkg, entity, entity, entity, entity, entity);
-	}
-
-	private static String queryServiceImpl(String pkg, String entity, String lower, String desc) {
-		return """
-				package %s.application.service.impl;
-
 				import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-				import %s.application.service.%sQueryService;
 				import %s.contract.common.page.PageResult;
 				import %s.contract.dto.request.Query%sRequest;
 				import %s.contract.dto.response.%sDetailResponse;
@@ -1387,19 +1365,18 @@ final class DddCrudSliceGenerator {
 				import org.springframework.transaction.annotation.Transactional;
 
 				/**
-				 * %s 查询服务（读侧 CQRS：ReadMapper 投影，不经领域对象）
+				 * %s 查询服务（读侧 CQRS：ReadMapper 投影，不经领域对象；具体类，无 Interface+Impl）
 				 */
 				@Service
 				@Transactional(readOnly = true)
-				public class %sQueryServiceImpl implements %sQueryService {
+				public class %sQueryService {
 
 					private final %sReadMapper %sReadMapper;
 
-					public %sQueryServiceImpl(%sReadMapper %sReadMapper) {
+					public %sQueryService(%sReadMapper %sReadMapper) {
 						this.%sReadMapper = %sReadMapper;
 					}
 
-					@Override
 					public %sDetailResponse detail(String id) {
 						%sDetailResponse detail = %sReadMapper.selectDetailById(id);
 						if (detail == null) {
@@ -1408,7 +1385,6 @@ final class DddCrudSliceGenerator {
 						return detail;
 					}
 
-					@Override
 					public PageResult<%sSummaryResponse> page(Query%sRequest query) {
 						Page<%sSummaryResponse> page = Page.of(query.current(), query.size());
 						return PageResult.of(
@@ -1419,9 +1395,9 @@ final class DddCrudSliceGenerator {
 					}
 
 				}
-				""".formatted(pkg, pkg, entity, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity,
-				desc, entity, entity, entity, lower, entity, entity, lower, lower, lower, entity, entity, lower, entity,
-				entity, entity, entity, lower);
+				""".formatted(pkg, pkg, pkg, entity, pkg, entity, pkg, entity, pkg, entity, pkg, entity, desc, entity,
+				entity, lower, entity, entity, lower, lower, lower, entity, entity, lower, entity, entity, entity,
+				entity, lower);
 	}
 
 	private static String controller(String pkg, String entity, String lower, String desc, ApiFlags apis,

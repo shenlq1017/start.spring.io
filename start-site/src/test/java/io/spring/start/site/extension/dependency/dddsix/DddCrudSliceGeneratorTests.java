@@ -86,8 +86,11 @@ class DddCrudSliceGeneratorTests {
 				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"))
 			.exists();
 		assertThat(projectRoot.resolve(
-				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"))
+				"demo-service-application/src/main/java/com/example/demo/application/service/UserQueryService.java"))
 			.exists();
+		assertThat(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"))
+			.doesNotExist();
 		assertThat(projectRoot.resolve(
 				"demo-service-contract/src/main/java/com/example/demo/contract/dto/request/CreateUserRequest.java"))
 			.exists();
@@ -123,12 +126,20 @@ class DddCrudSliceGeneratorTests {
 				projectRoot.resolve("demo-service-domain/src/main/java/com/example/demo/domain/query/PageSlice.java"))
 			.exists();
 
-		String queryImpl = Files.readString(projectRoot.resolve(
-				"demo-service-application/src/main/java/com/example/demo/application/service/impl/UserQueryServiceImpl.java"));
-		assertThat(queryImpl).contains("UserReadMapper")
+		String queryService = Files.readString(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/service/UserQueryService.java"));
+		assertThat(queryService).contains("@Service")
+			.contains("class UserQueryService")
+			.doesNotContain("interface UserQueryService")
+			.doesNotContain("QueryServiceImpl")
+			.contains("UserReadMapper")
 			.contains("selectSummaryPage")
 			.contains("Page.of")
 			.doesNotContain(".skip(");
+
+		String controllerSrc = Files.readString(projectRoot.resolve(
+				"demo-service-application/src/main/java/com/example/demo/application/controller/UserController.java"));
+		assertThat(controllerSrc).contains("UserQueryService").doesNotContain("QueryServiceImpl");
 
 		String appService = Files.readString(projectRoot.resolve(
 				"demo-service-application/src/main/java/com/example/demo/application/service/UserApplicationService.java"));

@@ -53,7 +53,11 @@ function Tree({ tree, selected, onClickItem }) {
             }}
           >
             <span className='item-content' tabIndex='-1'>
-              <span key={`s2${item.path}`} className='text'>
+              <span
+                key={`s2${item.path}`}
+                className='text'
+                style={{ marginLeft: `${depth * 16 + 6}px` }}
+              >
                 {get(item, 'children.length', 0) > 0 && <IconCaretDown />}
                 <span key={`s3${item.path}`} className='icon'>
                   <IconFolder key={`s4${item.path}`} />
@@ -90,7 +94,11 @@ function Tree({ tree, selected, onClickItem }) {
           }}
         >
           <span className='item-content' tabIndex='-1'>
-            <span key={`s2${item.path}`} className='text'>
+            <span
+              key={`s2${item.path}`}
+              className='text'
+              style={{ marginLeft: `${depth * 16 + 6}px` }}
+            >
               <span key={`s3${item.path}`} className='icon'>
                 <IconFile key={`s4${item.path}`} />
               </span>

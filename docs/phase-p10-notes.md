@@ -55,3 +55,7 @@ Client tests: `Explore/Generate query parity` in `ApiUtils.js` asserts template/
 - Templates: `application-pom`, `parent-pom`, `application-yml`, `readme`, `archunit-test`, `feign-client-pom`
 - Client: `ApiUtils.js`, `Application.js`, `Explore.js`, `Form.js`, `Template.js` (+ tests)
 - Docs: this file, `gen-code-review-zh.md`, `STATUS.md`
+
+## Superseded smoke zip
+
+P11 refreshed `docs/p10-smoke-demo-service.zip` (concrete QueryService + Explore-friendly root). See `docs/phase-p11-notes.md` / `docs/p11-smoke-demo-service.zip`.

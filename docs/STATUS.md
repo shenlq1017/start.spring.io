@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~22:30 Asia/Shanghai (UTC+8). **P10: CRUD P1+P2 + Explore/Generate parity** on `main` (local only; no CloudAgent).
+Updated: 2026-09-11 ~23:00 Asia/Shanghai (UTC+8). **P11: Explore indent + concrete Services + smoke zips** on `main` (local only; no CloudAgent).
 
 ## Phase summary
 
@@ -17,7 +17,8 @@ Updated: 2026-09-11 ~22:30 Asia/Shanghai (UTC+8). **P10: CRUD P1+P2 + Explore/Ge
 | **P7** | Java radios one line, template→selected deps kits, dark mode thorough pass | Done | `docs/phase-p7-notes.md` |
 | **P8** | Config/Java gap, real DDD CRUD + swagger + module URLs, H2 smoke | Done | `docs/phase-p8-notes.md` |
 | **P9** | CRUD review (zh) + pagination P0 | Done | `docs/gen-code-review-zh.md` |
-| **P10** | **All P1+P2 CRUD + Explore/Generate zip parity** | **Done** | `docs/phase-p10-notes.md` |
+| **P10** | All P1+P2 CRUD + Explore/Generate zip parity | Done | `docs/phase-p10-notes.md` |
+| **P11** | **Explore tree indent + concrete QueryService + smoke zip refresh** | **Done** | `docs/phase-p11-notes.md` |
 
 ## Project Structure markers
 
@@ -39,5 +40,5 @@ Updated: 2026-09-11 ~22:30 Asia/Shanghai (UTC+8). **P10: CRUD P1+P2 + Explore/Ge
 
 1. `git pull` on Windows clone
 2. `./mvnw clean install -DskipTests` then `java -jar start-site/target/start-site-exec.jar --application.offline=true`
-3. 企业DDD增强 + User → Explore tree **must match** Generate zip (ReadMapper, Snowflake, `@Validated` page, `contract.common.page.PageResult`)
-4. Review: `docs/gen-code-review-zh.md`, `docs/phase-p10-notes.md`; smoke zip `docs/p10-smoke-demo-service.zip`
+3. 企业DDD增强 + User → Explore: deep packages **indented**; `application/service` vs `domain/service` are distinct paths; Generate zip has concrete `UserQueryService` (no `impl/`)
+4. Review: `docs/phase-p11-notes.md`, `docs/phase-p10-notes.md`; smoke zip `docs/p11-smoke-demo-service.zip`
