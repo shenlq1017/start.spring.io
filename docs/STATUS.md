@@ -1,6 +1,6 @@
 # STATUS — start.spring.io China ecosystem fork (local sandbox)
 
-Updated: 2026-09-11 ~14:35 Asia/Shanghai (UTC+8). No CloudAgent / no git push / no commit.
+Updated: 2026-09-11 ~14:50 Asia/Shanghai (UTC+8). No CloudAgent / no git push / no commit.
 
 ## Phase summary
 
@@ -14,6 +14,8 @@ Updated: 2026-09-11 ~14:35 Asia/Shanghai (UTC+8). No CloudAgent / no git push / 
 | **B** | **Platform Monorepo (`platform-monorepo`)** | **Done (MVP) + live zip E2E PASS** | `docs/phaseB-platform-monorepo-notes.md` |
 | Preview | GH Pages static UI bundle (staged, not published) | Ready locally | `docs/gh-pages-preview/` |
 | **P0** | **zh-CN i18n + Architecture radio + Explore sort/refresh** | **Done** | `docs/phase-p0-notes.md` |
+| **P1** | **Template kit + multi-entity CRUD + Explore debounce** | **Done** | `docs/phase-p1-notes.md` |
+| **P2** | **Polish / docs / package / smoke** | **Done** | (included in P1 notes) |
 
 ## Project Structure markers
 

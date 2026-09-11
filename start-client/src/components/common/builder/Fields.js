@@ -4,6 +4,7 @@ import React, {useContext, useEffect, useRef, useState} from 'react'
 
 import Actions from './Actions'
 import Control from './Control'
+import EntitiesPanel from './EntitiesPanel'
 import FieldError from './FieldError'
 import FieldInput from './FieldInput'
 import FieldRadio from './FieldRadio'
@@ -14,6 +15,15 @@ import {Button, Radio} from '../form'
 import {Dependency} from '../dependency'
 import {InitializrContext} from '../../reducer/Initializr'
 import {ARCHITECTURE_OPTIONS, DEFAULT_ARCHITECTURE} from '../../utils/Architecture'
+import {
+  isEntitiesPanelVisible,
+  defaultEntities,
+} from '../../utils/Entities'
+import {
+  isTemplateVisible,
+  normalizeTemplate,
+  templateOptionsFor,
+} from '../../utils/Template'
 import {t} from '../../../i18n/zh'
 
 function Fields({
@@ -39,6 +49,12 @@ function Fields({
     dispatchInitializr({ type: 'UPDATE', payload: args })
   }
 
+  const architecture = get(values, 'architecture') || DEFAULT_ARCHITECTURE
+  const template = get(values, 'template') || ''
+  const entities = get(values, 'entities') || []
+  const showTemplate = isTemplateVisible(architecture)
+  const showEntities = isEntitiesPanelVisible(architecture, template)
+
   useEffect(() => {
     const clickOutside = event => {
       const children = get(wrapper, 'current')
@@ -51,6 +67,33 @@ function Fields({
       document.removeEventListener('mousedown', clickOutside)
     }
   }, [])
+
+  const onArchitectureChange = value => {
+    const nextEntities =
+      value === 'arch-ddd-service' ||
+      (value === 'arch-platform' && template === 'platform-enhanced')
+        ? entities.length
+          ? entities
+          : defaultEntities()
+        : entities
+    const nextTemplate = normalizeTemplate(value, undefined, nextEntities)
+    update({
+      architecture: value,
+      template: nextTemplate,
+      entities: nextEntities,
+    })
+  }
+
+  const onTemplateChange = value => {
+    let nextEntities = entities
+    if (
+      (architecture === 'arch-ddd-service' || value === 'platform-enhanced') &&
+      (!nextEntities || !nextEntities.length)
+    ) {
+      nextEntities = defaultEntities()
+    }
+    update({ template: value, entities: nextEntities })
+  }
 
   return (
     <>
@@ -110,16 +153,36 @@ function Fields({
               )}
             </Control>
 
-            <Control text={t('Architecture')}>
+            <Control text={t('Architecture')} className='control-architecture'>
               <Radio
                 name='architecture'
-                selected={get(values, 'architecture') || DEFAULT_ARCHITECTURE}
+                selected={architecture}
                 options={ARCHITECTURE_OPTIONS}
-                onChange={value => {
-                  update({ architecture: value })
-                }}
+                onChange={onArchitectureChange}
               />
             </Control>
+
+            {showTemplate && (
+              <Control text={t('Template')} className='control-template'>
+                <Radio
+                  name='template'
+                  selected={
+                    normalizeTemplate(architecture, template, entities)
+                  }
+                  options={templateOptionsFor(architecture)}
+                  onChange={onTemplateChange}
+                />
+              </Control>
+            )}
+
+            {showEntities && (
+              <Control text={t('Entities')} className='control-entities'>
+                <EntitiesPanel
+                  entities={entities}
+                  onChange={next => update({ entities: next })}
+                />
+              </Control>
+            )}
 
             <Control text={t('Project Metadata')}>
               <FieldInput

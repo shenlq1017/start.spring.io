@@ -26,6 +26,7 @@ import io.spring.initializr.web.support.InitializrMetadataUpdateStrategy;
 import io.spring.start.site.container.SimpleDockerServiceResolver;
 import io.spring.start.site.project.ProjectDescriptionCustomizerConfiguration;
 import io.spring.start.site.support.CacheableMavenVersionResolver;
+import io.spring.start.site.support.GenerationRequestAttributesFilter;
 import io.spring.start.site.support.StartInitializrMetadataUpdateStrategy;
 import io.spring.start.site.web.HomeController;
 import tools.jackson.databind.json.JsonMapper;
@@ -36,9 +37,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.restclient.RestTemplateBuilder;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
@@ -65,6 +68,15 @@ public class StartApplication {
 	@Bean
 	public HomeController homeController() {
 		return new HomeController();
+	}
+
+	@Bean
+	public FilterRegistrationBean<GenerationRequestAttributesFilter> generationRequestAttributesFilter() {
+		FilterRegistrationBean<GenerationRequestAttributesFilter> bean = new FilterRegistrationBean<>();
+		bean.setFilter(new GenerationRequestAttributesFilter());
+		bean.addUrlPatterns("/starter.zip", "/starter.tgz");
+		bean.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);
+		return bean;
 	}
 
 	@Bean

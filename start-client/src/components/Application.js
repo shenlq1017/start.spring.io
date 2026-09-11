@@ -139,18 +139,31 @@ export default function Application() {
     }
   }
 
-  // Debounced Explore refresh when architecture changes while the panel is open
-  const prevArchitecture = useRef(get(values, 'architecture'))
+  // Debounced Explore refresh when architecture / template / entities change
   const architecture = get(values, 'architecture')
+  const template = get(values, 'template')
+  const entities = get(values, 'entities')
+  const entitiesSig = JSON.stringify(
+    (entities || []).map(e => ({
+      name: e.name,
+      table: e.table,
+      db: e.db,
+      orm: e.orm,
+      fields: e.fields,
+      apis: e.apis,
+    }))
+  )
+  const exploreSignature = `${architecture}|${template || ''}|${entitiesSig}`
+  const prevExploreSignature = useRef(exploreSignature)
   useEffect(() => {
     if (!exploreOpen || !complete) {
-      prevArchitecture.current = architecture
+      prevExploreSignature.current = exploreSignature
       return undefined
     }
-    if (prevArchitecture.current === architecture) {
+    if (prevExploreSignature.current === exploreSignature) {
       return undefined
     }
-    prevArchitecture.current = architecture
+    prevExploreSignature.current = exploreSignature
     setBlob(null)
     const timer = setTimeout(() => {
       fetchProjectBlob().catch(() => {
@@ -160,7 +173,7 @@ export default function Application() {
     return () => {
       clearTimeout(timer)
     }
-  }, [exploreOpen, complete, architecture, fetchProjectBlob])
+  }, [exploreOpen, complete, exploreSignature, fetchProjectBlob])
 
   const onShare = () => {
     dispatch({ type: 'UPDATE', payload: { share: true } })

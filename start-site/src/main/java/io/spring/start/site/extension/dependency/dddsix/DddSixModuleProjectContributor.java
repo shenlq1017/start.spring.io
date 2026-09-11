@@ -35,6 +35,7 @@ import io.spring.initializr.generator.project.contributor.ProjectContributor;
 import io.spring.initializr.generator.version.Version;
 import io.spring.initializr.metadata.BillOfMaterials;
 import io.spring.initializr.metadata.InitializrMetadata;
+import io.spring.start.site.support.GenerationRequestAttributes;
 
 import org.springframework.core.Ordered;
 import org.springframework.util.StringUtils;
@@ -100,6 +101,38 @@ class DddSixModuleProjectContributor implements ProjectContributor {
 		Path bootstrapTest = projectRoot.resolve(svc + "-bootstrap/src/test/java/" + packagePath);
 		Files.createDirectories(bootstrapTest);
 		write(bootstrapTest.resolve("ModuleDependencyTest.java"), render("archunit-test.mustache", model));
+
+		contributeCrudSlices(projectRoot, svc, packageName, model);
+	}
+
+	private void contributeCrudSlices(Path projectRoot, String svc, String packageName, Map<String, String> model)
+			throws IOException {
+		GenerationRequestAttributes attrs = GenerationRequestAttributes.get();
+		String template = attrs.getTemplate();
+		var entities = attrs.getEntities();
+		boolean enhanced = "ddd-enhanced".equals(template) || (!"ddd-standard".equals(template) && !entities.isEmpty());
+		if (!enhanced) {
+			return;
+		}
+		if (entities.isEmpty()) {
+			entities = java.util.List.of(defaultUserEntity());
+		}
+		DddCrudSliceGenerator.generate(projectRoot, svc, packageName, entities);
+		// Mark README
+		Path readme = projectRoot.resolve("README-DDD.md");
+		if (Files.exists(readme)) {
+			String appendix = "\n\n## CRUD slices\nGenerated template=`" + template + "` entities=" + entities.size()
+					+ ".\n";
+			write(readme, Files.readString(readme) + appendix);
+		}
+	}
+
+	private static GenerationRequestAttributes.EntitySpec defaultUserEntity() {
+		return new GenerationRequestAttributes.EntitySpec("User", "sys_user", "postgresql", "mybatis-plus", "用户",
+				java.util.List.of(new GenerationRequestAttributes.FieldSpec("username", "String", true, true),
+						new GenerationRequestAttributes.FieldSpec("email", "String", false, false),
+						new GenerationRequestAttributes.FieldSpec("nickname", "String", false, false)),
+				GenerationRequestAttributes.ApiFlags.allCrud());
 	}
 
 	@Override

@@ -4,6 +4,12 @@ import set from 'lodash/set'
 
 import Extend from '../../Extend.json'
 import {applyArchitectureDependencies} from './Architecture'
+import {
+  isEntitiesPanelVisible,
+  parseEntitiesFromParam,
+  serializeEntitiesForApi,
+} from './Entities'
+import { isTemplateVisible, normalizeTemplate } from './Template'
 import {isInRange, parseReleases, parseVersion} from './Version'
 
 const PROPERTIES_MAPPING_URL = {
@@ -57,6 +63,20 @@ export const getShareUrl = values => {
     params = `${params}&dependencies=${deps.join(',')}`
   } else {
     params = `${params}&dependencies=`
+  }
+  const architecture = get(values, 'architecture')
+  const entities = get(values, 'entities') || []
+  const template = normalizeTemplate(
+    architecture,
+    get(values, 'template'),
+    entities
+  )
+  if (isTemplateVisible(architecture) && template) {
+    params = `${params}&template=${encodeURIComponent(template)}`
+  }
+  if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
+    const payload = JSON.stringify(serializeEntitiesForApi(entities))
+    params = `${params}&entities=${encodeURIComponent(payload)}`
   }
   return params
 }
@@ -181,6 +201,15 @@ export const parseParams = (values, queryParams, lists) => {
         }
       }
     })
+    if (queryParams.template) {
+      set(values, 'template', queryParams.template)
+    }
+    if (queryParams.entities) {
+      const parsedEntities = parseEntitiesFromParam(queryParams.entities)
+      if (parsedEntities) {
+        set(values, 'entities', parsedEntities)
+      }
+    }
   }
   return {
     values,
@@ -298,7 +327,23 @@ export const getProject = function getProject(url, values, config) {
     if (paramsDependencies) {
       paramsDependencies = `&dependencies=${paramsDependencies}`
     }
-    fetch(`${url}?${params}${paramsDependencies}`, {
+    let extra = ''
+    const architecture = get(values, 'architecture')
+    const entities = get(values, 'entities') || []
+    const template = normalizeTemplate(
+      architecture,
+      get(values, 'template'),
+      entities
+    )
+    if (isTemplateVisible(architecture) && template) {
+      extra += `&template=${encodeURIComponent(template)}`
+    }
+    if (isEntitiesPanelVisible(architecture, template) && entities.length > 0) {
+      extra += `&entities=${encodeURIComponent(
+        JSON.stringify(serializeEntitiesForApi(entities))
+      )}`
+    }
+    fetch(`${url}?${params}${paramsDependencies}${extra}`, {
       method: 'GET',
     }).then(
       response => {

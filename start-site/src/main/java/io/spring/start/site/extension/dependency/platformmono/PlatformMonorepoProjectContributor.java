@@ -35,6 +35,7 @@ import io.spring.initializr.generator.project.contributor.ProjectContributor;
 import io.spring.initializr.generator.version.Version;
 import io.spring.initializr.metadata.BillOfMaterials;
 import io.spring.initializr.metadata.InitializrMetadata;
+import io.spring.start.site.support.GenerationRequestAttributes;
 
 import org.springframework.core.Ordered;
 import org.springframework.util.StringUtils;
@@ -98,6 +99,28 @@ class PlatformMonorepoProjectContributor implements ProjectContributor {
 		write(deploy.resolve("compose.yaml"), render("compose.mustache", model));
 
 		writePackageInfos(projectRoot, model);
+
+		if (GenerationRequestAttributes.get().isPlatformEnhanced()) {
+			writeSampleServicePlaceholder(projectRoot, model);
+		}
+	}
+
+	private void writeSampleServicePlaceholder(Path projectRoot, Map<String, String> model) throws IOException {
+		Path sample = projectRoot.resolve("services/sample-service");
+		Files.createDirectories(sample);
+		String readme = "# sample-service\n\n"
+				+ "Platform enhanced template placeholder. Replace with a real DDD six-module service\n"
+				+ "(see business-microservice / ddd-six-module generator) or scaffold via spring-boot-gen.\n\n"
+				+ "Group: " + model.get("groupId") + "\n" + "Package: " + model.get("packageName") + "\n";
+		write(sample.resolve("README.md"), readme);
+		Path servicesPom = projectRoot.resolve("services/pom.xml");
+		if (Files.exists(servicesPom)) {
+			String pom = Files.readString(servicesPom);
+			if (!pom.contains("<module>sample-service</module>")) {
+				pom = pom.replace("</modules>", "        <module>sample-service</module>\n    </modules>");
+				write(servicesPom, pom);
+			}
+		}
 	}
 
 	@Override

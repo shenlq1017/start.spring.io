@@ -9,6 +9,8 @@ import {
   deriveArchitecture,
   isArchitectureMarker,
 } from '../utils/Architecture'
+import { defaultEntities } from '../utils/Entities'
+import { normalizeTemplate } from '../utils/Template'
 
 export const defaultInitializrContext = {
   values: {
@@ -16,6 +18,8 @@ export const defaultInitializrContext = {
     language: '',
     boot: '',
     architecture: DEFAULT_ARCHITECTURE,
+    template: '',
+    entities: defaultEntities(),
     meta: {
       group: '',
       artifact: '',
@@ -62,6 +66,8 @@ const getPersistedOrDefault = json => {
     boot: get(json, 'defaultValues').boot,
     architecture:
       localStorage.getItem('architecture') || DEFAULT_ARCHITECTURE,
+    template: '',
+    entities: defaultEntities(),
     meta: {
       group: get(json, 'defaultValues.meta').group,
       artifact: get(json, 'defaultValues.meta').artifact,
@@ -92,6 +98,11 @@ const getPersistedOrDefault = json => {
   ) {
     values.architecture = DEFAULT_ARCHITECTURE
   }
+  values.template = normalizeTemplate(
+    values.architecture,
+    values.template,
+    values.entities
+  )
   return values
 }
 
@@ -159,6 +170,18 @@ export function reducer(state, action) {
         ...changes,
         meta,
       }
+      if (get(changes, 'architecture') || get(changes, 'entities') || get(changes, 'template') !== undefined) {
+        values.template = normalizeTemplate(
+          values.architecture,
+          values.template,
+          values.entities
+        )
+      }
+      if (get(changes, 'architecture') === 'arch-ddd-service') {
+        if (!values.entities || !values.entities.length) {
+          values.entities = defaultEntities()
+        }
+      }
       return { ...state, values, share: getShareUrl(values), errors }
     }
     case 'LOAD': {
@@ -170,6 +193,14 @@ export function reducer(state, action) {
         lists
       )
       const values = sanitizeArchitecture(parsed)
+      if (!values.entities || !values.entities.length) {
+        values.entities = defaultEntities()
+      }
+      values.template = normalizeTemplate(
+        values.architecture,
+        values.template,
+        values.entities
+      )
       return { ...state, values, errors, warnings, share: getShareUrl(values) }
     }
     case 'ADD_DEPENDENCY': {
